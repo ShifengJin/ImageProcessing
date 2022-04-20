@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../../../Core/TwoImageAdd.h
+
+/home/alva/ImageProcessing/ImageProcessing/example/TwoImageAddTest.cpp
+iostream
+-
+TwoImageAdd.h
+/home/alva/ImageProcessing/ImageProcessing/example/TwoImageAdd.h
+
