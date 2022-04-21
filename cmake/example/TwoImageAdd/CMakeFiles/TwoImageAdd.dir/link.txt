@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/TwoImageAdd.dir/home/alva/ImageProcessing/ImageProcessing/example/TwoImageAddTest.cpp.o CMakeFiles/TwoImageAdd.dir/home/alva/ImageProcessing/ImageProcessing/Core/TwoImageAdd.cpp.o  -o TwoImageAdd 
