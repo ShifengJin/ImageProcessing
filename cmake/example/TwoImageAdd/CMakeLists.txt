@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.0.0)
 
 project(TwoImageAddTest)
 
@@ -8,11 +8,9 @@ set(CORE_INCLUDE_DIR ${workpath}Core)
 
 set(TwoImageAddLib TwoImageAdd)
 
-find_package(OpenCV REQUIRED)
-
 include_directories(
         ${CORE_INCLUDE_DIR} 
-        ${OpenCV_INCLUDE_DIRS}
+        ${workpath}ThirdLibrary/stb_image
         )
 
 set(SRC ${workpath}example/TwoImageAddTest.cpp)
