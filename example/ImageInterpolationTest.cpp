@@ -37,7 +37,12 @@ int main(int argc, char* argv[]){
         {
             ImageInterpolation_Nearest(image, width, height, channels, oBuffer, oWidth, oHeight);
         }
-        break;        
+        break;
+        case LINEAR:
+        {
+            ImageInterpolation_Linear(image, width, height, channels, oBuffer, oWidth, oHeight);
+        }
+        break;
         default:
         break;
     }

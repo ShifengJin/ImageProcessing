@@ -50,6 +50,70 @@ void ImageInterpolation_Nearest(
     }
 }
 
+void ImageInterpolation_Linear(
+    unsigned char* src, int width, int height, int channels,
+    unsigned char* dst, int oWidth, int oHeight){
+    
+    float scalex = 1.f * width / oWidth;
+    float scaley = 1.f * height / oHeight;
+
+    for(int i = 0; i < oHeight; ++ i){
+        float y = i * scaley;
+        int yUp = (int)y;
+        int yDown = yUp + 1;
+        float upWeight = yDown - y;
+        float downWeight = 1.f - upWeight;
+        for(int j = 0; j < oWidth; ++ j){
+            float x = j * scalex;
+            int xLeft = (int)x;
+            int xRight = xLeft + 1;
+            float leftWeight = xRight - x;
+            float rightWeight = 1.f - leftWeight;
+            
+            for(int c = 0; c < channels; ++ c){
+                float v = (src[(yUp * width + xLeft) * channels + c] * leftWeight + 
+                           src[(yUp * width + xRight) * channels + c] * rightWeight) * upWeight + 
+                          (src[(yDown * width + xLeft) * channels + c] * leftWeight + 
+                           src[(yDown * width + xRight) * channels + c] * rightWeight) * downWeight;
+                
+                dst[(i * oWidth + j) * channels + c] = v > 255.f ? (unsigned char)255 : (v < 0.f ? (unsigned char)0 : (unsigned char)v);
+            }
+        }
+    }
+}
+
+void ImageInterpolation_Linear(
+    float* src, int width, int height, int channels,
+    float* dst, int oWidth, int oHeight){
+
+    float scalex = 1.f * width / oWidth;
+    float scaley = 1.f * height / oHeight;
+
+    for(int i = 0; i < oHeight; ++ i){
+        float y = i * scaley;
+        int yUp = (int)y;
+        int yDown = yUp + 1;
+        float upWeight = yDown - y;
+        float downWeight = 1.f - upWeight;
+        for(int j = 0; j < oWidth; ++ j){
+            float x = j * scalex;
+            int xLeft = (int)x;
+            int xRight = xLeft + 1;
+            float leftWeight = xRight - x;
+            float rightWeight = 1.f - leftWeight;
+            
+            for(int c = 0; c < channels; ++ c){
+                float v = (src[(yUp * width + xLeft) * channels + c] * leftWeight + 
+                           src[(yUp * width + xRight) * channels + c] * rightWeight) * upWeight + 
+                          (src[(yDown * width + xLeft) * channels + c] * leftWeight + 
+                           src[(yDown * width + xRight) * channels + c] * rightWeight) * downWeight;
+                
+                dst[(i * oWidth + j) * channels + c] = v;
+            }
+        }
+    }
+}
+
 void ImageInterpolation_Unit(unsigned char** buffer){
     if(buffer){
         if(*buffer){
