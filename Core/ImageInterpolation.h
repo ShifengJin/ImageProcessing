@@ -1,15 +1,26 @@
 #ifndef _IMAGEINTERPOLATION_H_
 #define _IMAGEINTERPOLATION_H_
 
-// *   *   *   *   *   *
-//   +       +       +
+typedef enum _INTERPOLATION_TYPE_{
+    NEAREST = 0,
+}INTERPOLATIONTYPE;
 
-//  0.6
-//  *    *    *    *    *    *    *    *    *    *   9x+10    9x+4   x=4     40
-//    +        +        +        +        +        +                            5y+6     5y     y=8
 
-// 13/5
+void ImageInterpolation_Init(int width, int height, int channels, float scale, int* oWidth, int* oHeight, unsigned char** oBuffer);
+void ImageInterpolation_Init(int width, int height, int channels, float scale, int* oWidth, int* oHeight, float** oBuffer);
 
-void ImageInterpolation_Nearest();
+void ImageInterpolation_Nearest(
+    unsigned char* src, int width, int height, int channels,
+    unsigned char* dst, int oWidth, int oHeight);
+
+void ImageInterpolation_Nearest(
+    float* src, int width, int height, int channels,
+    float* dst, int oWidth, int oHeight);
+
+
+
+
+void ImageInterpolation_Unit(unsigned char** buffer);
+void ImageInterpolation_Unit(float** buffer);
 
 #endif
