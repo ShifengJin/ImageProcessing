@@ -43,6 +43,10 @@ int main(int argc, char* argv[]){
             ImageInterpolation_Linear(image, width, height, channels, oBuffer, oWidth, oHeight);
         }
         break;
+        case CUBIC:
+        {
+            ImageInterpolation_Cubic(image, width, height, channels, oBuffer, oWidth, oHeight);
+        }
         default:
         break;
     }
