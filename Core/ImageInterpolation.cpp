@@ -1,7 +1,11 @@
 #include <memory.h>
 #include <malloc.h>
 #include <math.h>
+#include <vector>
+#include <iostream>
+#include "Common.h"
 #include "ImageInterpolation.h"
+
 
 void ImageInterpolation_Init(int width, int height, int channels, float scale, int* oWidth, int* oHeight, unsigned char** oBuffer){
     *oWidth = (int)(width * scale + 0.5f);
@@ -271,6 +275,148 @@ void ImageInterpolation_Cubic(
         }
     }
 }
+
+float ImageInterpolation_Lanczos_ComputeWeight(float x, int A){
+    if(fabsf(x) < 1e-4f){
+        return 1.f;
+    }
+
+    if(x > -A && x < A){
+        return (A * sinf(PI * x) * sinf(PI * x / A) / (PI * PI * x * x));
+    }else{
+        return 0.f;
+    }
+}
+
+
+typedef struct _LanczosWeightParam_{
+    std::vector<int> index;
+    std::vector<float> weight;
+}LanczosWeightParam;
+
+void ImageInterpolation_Lanczos(
+    unsigned char* src, int width, int height, int channels,
+    unsigned char* dst, int oWidth, int oHeight, int A){
+    
+    float scaleX = width * 1.0f / oWidth;
+    float scaleY = height * 1.0f / oHeight;
+
+    LanczosWeightParam yLanczosWeightParam;
+    LanczosWeightParam xLanczosWeightParam;
+    yLanczosWeightParam.index.resize(A * 2);
+    yLanczosWeightParam.weight.resize(A * 2);
+    xLanczosWeightParam.index.resize(A * 2);
+    xLanczosWeightParam.weight.resize(A * 2);    
+
+    for(int i = 0; i < oHeight; ++ i){
+        float y = i * scaleY;
+        for(int yIter = 0; yIter < A * 2; ++ yIter){
+            yLanczosWeightParam.index[yIter] = (int)y - (A - yIter) + 1;
+            if(yLanczosWeightParam.index[yIter] < 0){
+                yLanczosWeightParam.index[yIter] = 0;
+                yLanczosWeightParam.weight[yIter] = 0.f;
+            }else{
+                yLanczosWeightParam.weight[yIter] = ImageInterpolation_Lanczos_ComputeWeight(yLanczosWeightParam.index[yIter] - y, A);
+            }
+            //std::cout << yLanczosWeightParam.weight[yIter] << ", ";
+        }
+        //std::cout << std::endl;
+        //std::cout << "========================================================" << std::endl;
+        for(int j = 0; j < oWidth; ++ j){
+            float x = j * scaleX;
+            for(int xIter = 0; xIter < A * 2; ++ xIter){
+                xLanczosWeightParam.index[xIter] = (int)x - (A - xIter) + 1;
+                if(xLanczosWeightParam.index[xIter] < 0){
+                    xLanczosWeightParam.index[xIter] = 0;
+                    xLanczosWeightParam.weight[xIter] = 0.f;
+                }else{
+                    xLanczosWeightParam.weight[xIter] = ImageInterpolation_Lanczos_ComputeWeight(xLanczosWeightParam.index[xIter] - x, A);
+                }
+            }
+            
+            std::vector<float> channelsSum(channels, 0);
+
+            for(int yIter = 0; yIter< A * 2; ++ yIter){
+                float yOffset = yLanczosWeightParam.index[yIter];
+                float yWeight = yLanczosWeightParam.weight[yIter];
+                for(int xIter = 0; xIter < A * 2; ++ xIter){
+                    float xOffset = xLanczosWeightParam.index[xIter];
+                    float xWeight = xLanczosWeightParam.weight[xIter];
+                    float weight = yWeight * xWeight;
+                    int index = (yOffset * width + xOffset) * channels;
+                    for(int c = 0; c < channels; ++ c){
+                        channelsSum[c] += (src[index + c] * weight);
+                    }
+                }
+            }
+            for(int c = 0; c < channels; ++ c){
+                dst[(i * oWidth + j) * channels + c] = CLAMP(channelsSum[c], (unsigned char)0, (unsigned char)255);
+            }
+
+        }
+    }
+
+}
+
+void ImageInterpolation_Lanczos(
+    float* src, int width, int height, int channels,
+    float* dst, int oWidth, int oHeight, int A){
+    float scaleX = width * 1.0f / oWidth;
+    float scaleY = height * 1.0f / oHeight;
+
+    LanczosWeightParam yLanczosWeightParam;
+    LanczosWeightParam xLanczosWeightParam;
+    yLanczosWeightParam.index.resize(A * 2);
+    yLanczosWeightParam.weight.resize(A * 2);
+    xLanczosWeightParam.index.resize(A * 2);
+    xLanczosWeightParam.weight.resize(A * 2);    
+
+    for(int i = 0; i < oHeight; ++ i){
+        float y = i * scaleY;
+        for(int yIter = 0; yIter < A * 2; ++ yIter){
+            yLanczosWeightParam.index[yIter] = (int)y - (A - yIter) + 1;
+            if(yLanczosWeightParam.index[yIter] < 0){
+                yLanczosWeightParam.index[yIter] = 0;
+                yLanczosWeightParam.weight[yIter] = 0.f;
+            }else{
+                yLanczosWeightParam.weight[yIter] = ImageInterpolation_Lanczos_ComputeWeight(yLanczosWeightParam.index[yIter] - y, A);
+            }
+        }
+
+        for(int j = 0; j < oWidth; ++ j){
+            float x = j * scaleX;
+            for(int xIter = 0; xIter < A * 2; ++ xIter){
+                xLanczosWeightParam.index[xIter] = (int)x - (A - xIter) + 1;
+                if(xLanczosWeightParam.index[xIter] < 0){
+                    xLanczosWeightParam.index[xIter] = 0;
+                    xLanczosWeightParam.weight[xIter] = 0.f;
+                }else{
+                    xLanczosWeightParam.weight[xIter] = ImageInterpolation_Lanczos_ComputeWeight(xLanczosWeightParam.index[xIter] - x, A);
+                }
+            }
+            
+            std::vector<float> channelsSum(channels, 0);
+
+            for(int yIter = 0; yIter< A * 2; ++ yIter){
+                float yOffset = yLanczosWeightParam.index[yIter];
+                float yWeight = yLanczosWeightParam.weight[yIter];
+                for(int xIter = 0; xIter < A * 2; ++ xIter){
+                    float xOffset = xLanczosWeightParam.index[xIter];
+                    float xWeight = xLanczosWeightParam.weight[xIter];
+                    float weight = yWeight * xWeight;
+                    int index = (yOffset * width + xOffset) * channels;
+                    for(int c = 0; c < channels; ++ c){
+                        channelsSum[c] += src[index + c] * weight;
+                    }
+                }
+            }
+            for(int c = 0; c < channels; ++ c){
+                dst[(i * oWidth + j) * channels + c] = channelsSum[c];
+            }
+        }
+    }
+}
+
 
 void ImageInterpolation_Unit(unsigned char** buffer){
     if(buffer){

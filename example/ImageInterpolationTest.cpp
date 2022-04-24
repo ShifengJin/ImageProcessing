@@ -8,8 +8,8 @@
 
 int main(int argc, char* argv[]){
 
-    if(argc != 5){
-        std::cout << "./ImageInterpolationTest image_path out_image_path scale type" << std::endl;
+    if(argc < 5){
+        std::cout << "./ImageInterpolationTest image_path out_image_path scale type otherparam" << std::endl;
         return 0;
     }
     std::string imagePath = argv[1];
@@ -47,6 +47,13 @@ int main(int argc, char* argv[]){
         {
             ImageInterpolation_Cubic(image, width, height, channels, oBuffer, oWidth, oHeight);
         }
+        break;
+        case LANCZOS:
+        {
+            int A = atoi(argv[5]);
+            ImageInterpolation_Lanczos(image, width, height, channels, oBuffer, oWidth, oHeight, 3);
+        }
+        break;
         default:
         break;
     }
