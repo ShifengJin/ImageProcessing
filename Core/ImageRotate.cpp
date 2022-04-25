@@ -6,7 +6,7 @@
 void ImageRotate(unsigned char* src, int width, int height, int channels,
                  unsigned char* dst, float angle){
 
-    float degAngle = angle * ANGLE2REG;
+    float degAngle = angle * ANGLE2RAD;
     float cosAngle = cosf(degAngle);
     float sinAngle = sinf(degAngle);
     float negativeSinAngle = -sinAngle;
@@ -61,7 +61,7 @@ void ImageRotate(unsigned char* src, int width, int height, int channels,
 void ImageRotate(float* src, int width, int height, int channels,
                  float* dst, float angle){
     
-    float degAngle = angle * ANGLE2REG;
+    float degAngle = angle * ANGLE2RAD;
     float cosAngle = cosf(degAngle);
     float sinAngle = sinf(degAngle);
     float negativeSinAngle = -sinAngle;

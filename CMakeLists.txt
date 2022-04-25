@@ -22,7 +22,14 @@ set(ImageRotate_Inc ${CORE_ROOT}/ImageRotate.h)
 add_library(ImageRotate STATIC ${ImageRotate_Src} ${ImageRotate_Inc})
 target_include_directories(ImageRotate PUBLIC ${CORE_ROOT})
 
+# Build ImageBlur
+set(ImageBlur_Src ${CORE_ROOT}/ImageBlur.cpp)
+set(ImageBlur_Inc ${CORE_ROOT}/ImageBlur.h)
+add_library(ImageBlur STATIC ${ImageBlur_Src} ${ImageBlur_Inc})
+target_include_directories(ImageBlur PUBLIC ${CORE_ROOT})
+
 
 add_subdirectory(cmake/example/TwoImageAdd)
 add_subdirectory(cmake/example/ImageInterpolation)
 add_subdirectory(cmake/example/ImageRotate)
+add_subdirectory(cmake/example/ImageBlur)
