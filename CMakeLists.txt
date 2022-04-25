@@ -16,6 +16,13 @@ set(ImageInterpolation_Inc ${CORE_ROOT}/ImageInterpolation.h)
 add_library(ImageInterpolation STATIC ${ImageInterpolation_Src} ${ImageInterpolation_Inc})
 target_include_directories(ImageInterpolation PUBLIC ${CORE_ROOT})
 
+# Build ImageRotate
+set(ImageRotate_Src ${CORE_ROOT}/ImageRotate.cpp)
+set(ImageRotate_Inc ${CORE_ROOT}/ImageRotate.h)
+add_library(ImageRotate STATIC ${ImageRotate_Src} ${ImageRotate_Inc})
+target_include_directories(ImageRotate PUBLIC ${CORE_ROOT})
+
 
 add_subdirectory(cmake/example/TwoImageAdd)
 add_subdirectory(cmake/example/ImageInterpolation)
+add_subdirectory(cmake/example/ImageRotate)
