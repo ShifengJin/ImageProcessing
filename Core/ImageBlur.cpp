@@ -1,6 +1,7 @@
 #include <math.h>
 #include <vector>
 #include <memory.h>
+#include <time.h>
 #include "Common.h"
 #include "ImageBlur.h"
 
@@ -354,6 +355,55 @@ void ImageAvg(float* src, int width, int height, int channels, float* dst, int k
                     }
                 }
                 dst[(i * width + j) * channels + c] = (unsigned char)roundf(sum * 1.f / size);
+            }
+
+        }
+    }
+}
+
+void ImageGlass(unsigned char* src, int width, int height, int channels, unsigned char* dst, int ksize){
+
+    srand(time(NULL));
+
+    int s = -ksize / 2;
+    int e = ksize / 2;
+    for(int i = 0; i < height; ++ i){
+        for(int j = 0; j < width; ++ j){
+            
+            int starty = (i + s) < 0 ? (-i) : (s);
+            int startx = (j + s) < 0 ? (-j) : (s);
+            int endy = (i + e) > (height - 1) ? (height - 1 - i) : (e);
+            int endx = (j + e) > (width - 1) ? (width - 1 - j) : (e);
+
+            int y = rand() % (endy - starty + 1) + starty;
+            int x = rand() % (endx - startx + 1) + startx;
+
+            for(int c = 0; c < channels; ++ c){
+                dst[(i * width + j) * channels + c] = src[((i + y) * width + (j + x)) * channels + c];
+            }
+
+        }
+    }
+}
+
+void ImageGlass(float* src, int width, int height, int channels, float* dst, int ksize){
+    srand(time(NULL));
+
+    int s = -ksize / 2;
+    int e = ksize / 2;
+    for(int i = 0; i < height; ++ i){
+        for(int j = 0; j < width; ++ j){
+            
+            int starty = (i + s) < 0 ? (-i) : (s);
+            int startx = (j + s) < 0 ? (-j) : (s);
+            int endy = (i + e) > (height - 1) ? (height - 1 - i) : (e);
+            int endx = (j + e) > (width - 1) ? (width - 1 - j) : (e);
+
+            int y = rand() % (endy - starty + 1) + starty;
+            int x = rand() % (endx - startx + 1) + startx;
+
+            for(int c = 0; c < channels; ++ c){
+                dst[(i * width + j) * channels + c] = src[((i + y) * width + (j + x)) * channels + c];
             }
 
         }

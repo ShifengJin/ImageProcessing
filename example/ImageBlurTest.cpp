@@ -57,6 +57,11 @@ int main(int argc, char* argv[]){
                 ImageAvg(image, width, height, channels, oImageBuffer, ksize);
             }
             break;
+            case GLASS:
+            {
+                ImageGlass(image, width, height, channels, oImageBuffer, ksize);
+            }
+            break;
             default:
             break;
         }
