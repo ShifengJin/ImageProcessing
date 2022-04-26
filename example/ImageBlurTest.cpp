@@ -52,6 +52,11 @@ int main(int argc, char* argv[]){
                 ImageMedian(image, width, height, channels, oImageBuffer,  ksize);
             }
             break;
+            case AVG:
+            {
+                ImageAvg(image, width, height, channels, oImageBuffer, ksize);
+            }
+            break;
             default:
             break;
         }

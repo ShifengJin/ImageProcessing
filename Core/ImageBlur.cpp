@@ -305,8 +305,57 @@ void ImageMedian(float* src, int width, int height, int channels, float* dst, in
 
 void ImageAvg(unsigned char* src, int width, int height, int channels, unsigned char* dst, int ksize){
     
+    int s = -ksize / 2;
+    int e = ksize / 2;
+    for(int i = 0; i < height; ++ i){
+        for(int j = 0; j < width; ++ j){
+            
+            int starty = (i + s) < 0 ? (-i) : (s);
+            int startx = (j + s) < 0 ? (-j) : (s);
+            int endy = (i + e) > (height - 1) ? (height - 1 - i) : (e);
+            int endx = (j + e) > (width - 1) ? (width - 1 - j) : (e);
+
+            int size = (endy - starty + 1) * (endx - startx + 1);
+
+            for(int c = 0; c < channels; ++ c){
+                int sum = 0;
+
+                for(int m = starty; m <= endy; ++ m){
+                    for(int n = startx; n <= endx; ++ n){
+                        sum += src[((i + m) * width + (j + n)) * channels + c];
+                    }
+                }
+                dst[(i * width + j) * channels + c] = (unsigned char)roundf(sum * 1.f / size);
+            }
+
+        }
+    }
 }
 
 void ImageAvg(float* src, int width, int height, int channels, float* dst, int ksize){
+    int s = -ksize / 2;
+    int e = ksize / 2;
+    for(int i = 0; i < height; ++ i){
+        for(int j = 0; j < width; ++ j){
+            
+            int starty = (i + s) < 0 ? (-i) : (s);
+            int startx = (j + s) < 0 ? (-j) : (s);
+            int endy = (i + e) > (height - 1) ? (height - 1 - i) : (e);
+            int endx = (j + e) > (width - 1) ? (width - 1 - j) : (e);
 
+            int size = (endy - starty + 1) * (endx - startx + 1);
+
+            for(int c = 0; c < channels; ++ c){
+                int sum = 0;
+
+                for(int m = starty; m <= endy; ++ m){
+                    for(int n = startx; n <= endx; ++ n){
+                        sum += src[((i + m) * width + (j + n)) * channels + c];
+                    }
+                }
+                dst[(i * width + j) * channels + c] = (unsigned char)roundf(sum * 1.f / size);
+            }
+
+        }
+    }
 }
