@@ -124,16 +124,19 @@ void ConvFloat(float* in, float* out, int width, int channels, float* filter, in
 
     int lineSize = width * channels;
     float* inTemp = in;
-    
+    std::vector<float> sum(channels, 0.f);
     for (int i = 0; i < ksize; ++i) {
         for (int j = 0; j < ksize; ++j) {
             int xoffset = j * channels;
             for(int c = 0; c < channels; ++ c){
-                out[c] += (*filter) * inTemp[xoffset + c];
+                sum[c] += (*filter) * inTemp[xoffset + c];
             }
             filter++;
         }
         inTemp = inTemp + lineSize;
+    }
+    for(int c = 0; c < channels; ++ c){
+        out[c] = CLAMP(sum[c], 0.f, 1.f);
     }
 }
 
@@ -189,7 +192,7 @@ void ImageConvolution(
 }
 
 
-int dichotomy(unsigned char* A, int start, int end){
+static int dichotomy(unsigned char* A, int start, int end){
     int banchmark = A[start];
 
     int nLeft = start;
@@ -205,7 +208,7 @@ int dichotomy(unsigned char* A, int start, int end){
     return nLeft;
 }
 
-int dichotomy(float* A, int start, int end){
+static int dichotomy(float* A, int start, int end){
     int banchmark = A[start];
 
     int nLeft = start;
@@ -221,7 +224,7 @@ int dichotomy(float* A, int start, int end){
     return nLeft;
 }
 
-unsigned char quickSelect(unsigned char* A, int start, int end, int n) {
+static unsigned char quickSelect(unsigned char* A, int start, int end, int n) {
     int small = dichotomy(A, start, end);
     if (small == n - 1) {
         return A[small];
@@ -234,7 +237,7 @@ unsigned char quickSelect(unsigned char* A, int start, int end, int n) {
     }
 }
 
-float quickSelect(float* A, int start, int end, int n) {
+static float quickSelect(float* A, int start, int end, int n) {
     int small = dichotomy(A, start, end);
     if (small == n - 1) {
         return A[small];
@@ -406,6 +409,115 @@ void ImageGlass(float* src, int width, int height, int channels, float* dst, int
                 dst[(i * width + j) * channels + c] = src[((i + y) * width + (j + x)) * channels + c];
             }
 
+        }
+    }
+}
+
+
+void BilaternalColorFilter(float* ofilter, float sigma){
+    float colorSigmaInv = 0.5f / (sigma * sigma);
+    for(int i = 0; i < 256; ++ i){
+        float colorDiff = expf(-(i * i) * colorSigmaInv);
+        ofilter[i] = colorDiff;
+    }
+}
+
+static void convBilateral(float* in, float* out, int width, float* filter, int ksize, float* colorFilter, float* centerValue, int channels) {
+
+    int lineSize = width * channels;
+    float* inTemp = in;
+    std::vector<float> sum(channels, 0.f);
+    std::vector<float> filterSum(channels, 0.f);
+    
+    for (int i = 0; i < ksize; ++i) {
+        for (int j = 0; j < ksize; ++j) {
+            int xoffset = j * channels;
+            for(int c = 0; c < channels; ++ c){
+                float v = inTemp[xoffset + c];
+    
+                float bv = *filter * colorFilter[(int)(fabsf((v - centerValue[c]) * 255.f) + 0.5f)];
+    
+                filterSum[c] += bv;
+    
+                sum[c] += bv * v;
+            }
+            filter++;
+        }
+        inTemp = inTemp + lineSize;
+    }
+
+    for(int c = 0; c < channels; ++ c){
+        float v = sum[c] / filterSum[c];
+        out[c] = CLAMP(v, 0.f, 1.f);
+    }
+}
+
+static void convBilateral(unsigned char* in, unsigned char* out, int width, float* filter, int ksize, float* colorFilter, unsigned char* centerValue, int channels) {
+
+    int lineSize = width * channels;
+    unsigned char* inTemp = in;
+    std::vector<float> sum(channels, 0.f);
+    std::vector<float> filterSum(channels, 0.f);
+    
+    for (int i = 0; i < ksize; ++i) {
+        for (int j = 0; j < ksize; ++j) {
+            int xoffset = j * channels;
+            for(int c = 0; c < channels; ++ c){
+                float v = inTemp[xoffset + c];
+    
+                float bv = *filter * colorFilter[(int)(fabsf((v - centerValue[c])) + 0.5f)];
+    
+                filterSum[c] += bv;
+    
+                sum[c] += bv * v;
+            }
+            filter++;
+        }
+        inTemp = inTemp + lineSize;
+    }
+
+    for(int c = 0; c < channels; ++ c){
+        float v = sum[c] / filterSum[c] + 0.5f;
+        out[c] = (unsigned char)(CLAMP(v, 0.f, 255.f));
+    }
+}
+
+void ImageBilaternal(unsigned char* src, int width, int height, int channels, unsigned char* dst, float* gaussFilter, int ksize, float* colorFilter){
+    
+    int startX = ksize / 2;
+    int endX = width - ksize / 2;
+    int startY = ksize / 2;
+    int endY = height - ksize / 2;
+
+    unsigned char* tmpOut = dst + (startY * width + startX) * channels;
+    memset(dst, 0, width * height * channels * sizeof(unsigned char));
+
+    for(int h = 0; h <= height - ksize; ++ h){
+        int yoffset = h * width;
+        for(int w = 0; w <= width - ksize; ++ w){
+            int xoffset = (yoffset + w) * channels;
+            int centerIndex = ((h + startY) * width + (w + startX)) * channels;
+            convBilateral((src + xoffset), (tmpOut + xoffset), width, gaussFilter, ksize, colorFilter, (src + centerIndex), channels);
+        }
+    }
+}
+
+void ImageBilaternal(float* src, int width, int height, int channels, float* dst, float* gaussFilter, int ksize, float* colorFilter){
+    
+    int startX = ksize / 2;
+    int endX = width - ksize / 2;
+    int startY = ksize / 2;
+    int endY = height - ksize / 2;
+
+    float* tmpOut = dst + (startY * width + startX) * channels;
+    memset(dst, 0, width * height * channels * sizeof(float));
+
+    for(int h = 0; h <= height - ksize; ++ h){
+        int yoffset = h * width;
+        for(int w = 0; w <= width - ksize; ++ w){
+            int xoffset = (yoffset + w) * channels;
+            int centerIndex = ((h + startY) * width + (w + startX)) * channels;
+            convBilateral((src + xoffset), (tmpOut + xoffset), width, gaussFilter, ksize, colorFilter, (src + centerIndex), channels);
         }
     }
 }

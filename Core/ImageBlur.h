@@ -6,11 +6,13 @@ typedef enum _BLURTYPE_{
     MOTION = 1,
     MEDIAN = 2,
     AVG = 3,
-    GLASS = 4
+    GLASS = 4,
+    BILATERNAL = 5,
 }BLURTYPE;
 
 void GaussFilter(int ksize, float sigma, float* ofilter);
 void MotionFilter(int ksize, float angle, float* ofilter);
+void BilaternalColorFilter(float* ofilter, float sigma);
 
 void ImageConvolution(
     unsigned char* src, int width, int height, int channels,
@@ -28,5 +30,8 @@ void ImageAvg(float* src, int width, int height, int channels, float* dst, int k
 
 void ImageGlass(unsigned char* src, int width, int height, int channels, unsigned char* dst, int ksize);
 void ImageGlass(float* src, int width, int height, int channels, float* dst, int ksize);
+
+void ImageBilaternal(unsigned char* src, int width, int height, int channels, unsigned char* dst, float* gaussFilter, int ksize, float* colorFilter);
+void ImageBilaternal(float* src, int width, int height, int channels, float* dst, float* gaussFilter, int ksize, float* colorFilter);
 
 #endif

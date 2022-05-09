@@ -33,8 +33,13 @@ int main(int argc, char* argv[]){
         switch(blurType){
             case GAUSS:
             {
+                float sigma = 1.f;
+                if(argc < 6){
+                    std::cout << "gauss need sigma value default is 1.f" << std::endl;
+                }else{
+                    sigma = atof(argv[5]);
+                }
                 std::vector<float> filter(ksize * ksize, 0.f);
-                float sigma = atof(argv[5]);
                 GaussFilter(ksize, sigma, filter.data());
                 ImageConvolution(image, width, height, channels, oImageBuffer, filter.data(), ksize);
             }
@@ -60,6 +65,27 @@ int main(int argc, char* argv[]){
             case GLASS:
             {
                 ImageGlass(image, width, height, channels, oImageBuffer, ksize);
+            }
+            break;
+            case BILATERNAL:
+            {
+                if(argc < 6){
+                    std::cout << "bilaternal need gauss sigma(default = 1.f) and color sigma(default = 1.f)" << std::endl;
+                }
+                
+                float sigma = 1.f, colorSigma = 1.f;
+                if(argc >= 6){
+                    sigma = atof(argv[5]);
+                }
+                if (argc >= 7){
+                    colorSigma = atof(argv[6]);
+                }
+
+                std::vector<float> gaussFilter(ksize * ksize, 0.f);
+                GaussFilter(ksize, sigma, gaussFilter.data());
+                float colorFilter[256] = {0.f};
+                BilaternalColorFilter(colorFilter, colorSigma);
+                ImageBilaternal(image, width, height, channels, oImageBuffer, gaussFilter.data(), ksize, colorFilter);
             }
             break;
             default:
