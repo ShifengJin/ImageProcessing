@@ -1,2 +1,0 @@
-/usr/bin/ar qc libImageRotate.a  CMakeFiles/ImageRotate.dir/Core/ImageRotate.cpp.o
-/usr/bin/ranlib libImageRotate.a

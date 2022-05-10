@@ -1,2 +1,0 @@
-/usr/bin/ar qc libImageInterpolation.a  CMakeFiles/ImageInterpolation.dir/Core/ImageInterpolation.cpp.o
-/usr/bin/ranlib libImageInterpolation.a

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libImageBlur.a  CMakeFiles/ImageBlur.dir/Core/ImageBlur.cpp.o
-/usr/bin/ranlib libImageBlur.a

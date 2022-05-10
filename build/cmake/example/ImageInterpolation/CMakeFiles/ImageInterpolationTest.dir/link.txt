@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/ImageInterpolationTest.dir/__/__/__/example/ImageInterpolationTest.cpp.o  -o ImageInterpolationTest  ../../../libImageInterpolation.a 
