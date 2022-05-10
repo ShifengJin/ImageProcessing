@@ -102,18 +102,18 @@ void MotionFilter(int ksize, float angle, float* ofilter){
 
 void ConvUInt8(unsigned char* in, unsigned char* out, int width, int channels, float* filter, int ksize) {
 
+    int offset = ksize / 2;
     int lineSize = width * channels;
     unsigned char* inTemp = in;
-    std::vector<float> sum(channels, 0);
-    for (int i = 0; i < ksize; ++i) {
-        for (int j = 0; j < ksize; ++j) {
-            int xoffset = j * channels;
+    std::vector<float> sum(channels, 0.f);
+    for (int i = -offset; i <= offset; ++i) {
+        for (int j = -offset; j <= offset; ++j) {
+            int index = (i * width + j) * channels;
             for(int c = 0; c < channels; ++ c){
-                sum[c] += (*filter) * inTemp[xoffset + c];
+                sum[c] += (*filter) * *(inTemp + index + c);
             }
             filter++;
         }
-        inTemp = inTemp + lineSize;
     }
     for(int c = 0; c < channels; ++ c){
         out[c] = CLAMP(sum[c], (unsigned char)0, (unsigned char)255);
@@ -121,22 +121,22 @@ void ConvUInt8(unsigned char* in, unsigned char* out, int width, int channels, f
 }
 
 void ConvFloat(float* in, float* out, int width, int channels, float* filter, int ksize) {
-
+    int offset = ksize / 2;
     int lineSize = width * channels;
     float* inTemp = in;
     std::vector<float> sum(channels, 0.f);
-    for (int i = 0; i < ksize; ++i) {
-        for (int j = 0; j < ksize; ++j) {
-            int xoffset = j * channels;
+    for (int i = -offset; i <= offset; ++i) {
+        for (int j = -offset; j <= offset; ++j) {
+            int index = (i * width + j) * channels;
             for(int c = 0; c < channels; ++ c){
-                sum[c] += (*filter) * inTemp[xoffset + c];
+                sum[c] += (*filter) * *(inTemp + index + c);
             }
             filter++;
         }
-        inTemp = inTemp + lineSize;
     }
     for(int c = 0; c < channels; ++ c){
-        out[c] = CLAMP(sum[c], 0.f, 1.f);
+        //out[c] = CLAMP(sum[c], 0.f, 1.f);
+        out[c] = sum[c];
     }
 }
 
@@ -146,24 +146,23 @@ void ImageConvolution(
 
     size_t size = (size_t)width * (size_t)height * sizeof(unsigned char) * channels;
 
-    int startX = ksize / 2;
-    int endX = width - ksize / 2;
+    int offset = ksize / 2;
 
-    int startY = ksize / 2;
-    int endY = height - ksize / 2;
+    int startX = offset;
+    int endX = width - offset;
 
-    unsigned char* tempOut = dst + (startY * width + startX) * 3;
-
+    int startY = offset;
+    int endY = height - offset;
+    
     memset(dst, 0, size);
     
-    for (int i = 0; i <= height - ksize; ++i) {
+     for (int i = offset; i < height - offset; ++i) {
         int yoffset = i * width * channels;
-        for (int j = 0; j <= width - ksize; ++j) {
+        for (int j = offset; j < width - offset; ++j) {
             int xoffset = yoffset + j * channels;
-            ConvUInt8((src + xoffset), (tempOut + xoffset), width, channels, filter, ksize);
+            ConvUInt8((src + xoffset), (dst + xoffset), width, channels, filter, ksize);
         }
     }
-
 }
 
 void ImageConvolution(
@@ -172,25 +171,24 @@ void ImageConvolution(
 
     size_t size = (size_t)width * (size_t)height * sizeof(float) * channels;
 
-    int startX = ksize / 2;
-    int endX = width - ksize / 2;
+    int offset = ksize / 2;
 
-    int startY = ksize / 2;
-    int endY = height - ksize / 2;
+    int startX = offset;
+    int endX = width - offset;
 
-    float* tempOut = dst + (startY * width + startX) * 3;
-
+    int startY = offset;
+    int endY = height - offset;
+    
     memset(dst, 0, size);
     
-    for (int i = 0; i <= height - ksize; ++i) {
+    for (int i = offset; i < height - offset; ++i) {
         int yoffset = i * width * channels;
-        for (int j = 0; j <= width - ksize; ++j) {
+        for (int j = offset; j < width - offset; ++j) {
             int xoffset = yoffset + j * channels;
-            ConvFloat((src + xoffset), (tempOut + xoffset), width, channels, filter, ksize);
+            ConvFloat((src + xoffset), (dst + xoffset), width, channels, filter, ksize);
         }
     }
 }
-
 
 static int dichotomy(unsigned char* A, int start, int end){
     int banchmark = A[start];
