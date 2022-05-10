@@ -1,0 +1,2 @@
+/usr/bin/ar qc libImageProcessing.a  CMakeFiles/ImageProcessing.dir/Core/ImageBlur.cpp.o CMakeFiles/ImageProcessing.dir/Core/ImageHarrisCorner.cpp.o CMakeFiles/ImageProcessing.dir/Core/ImageInterpolation.cpp.o CMakeFiles/ImageProcessing.dir/Core/ImageRotate.cpp.o CMakeFiles/ImageProcessing.dir/Core/ImageTransformation.cpp.o CMakeFiles/ImageProcessing.dir/Core/TwoImageAdd.cpp.o
+/usr/bin/ranlib libImageProcessing.a

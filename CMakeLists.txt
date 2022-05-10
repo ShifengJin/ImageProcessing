@@ -28,8 +28,13 @@ set(ImageBlur_Inc ${CORE_ROOT}/ImageBlur.h)
 add_library(ImageBlur STATIC ${ImageBlur_Src} ${ImageBlur_Inc})
 target_include_directories(ImageBlur PUBLIC ${CORE_ROOT})
 
+# Build All
+aux_source_directory(${CORE_ROOT} SRC)
+add_library(ImageProcessing STATIC ${SRC})
+target_include_directories(ImageProcessing PUBLIC ${CORE_ROOT})
 
 add_subdirectory(cmake/example/TwoImageAdd)
 add_subdirectory(cmake/example/ImageInterpolation)
 add_subdirectory(cmake/example/ImageRotate)
 add_subdirectory(cmake/example/ImageBlur)
+add_subdirectory(cmake/example/ImageHarrisCorner)

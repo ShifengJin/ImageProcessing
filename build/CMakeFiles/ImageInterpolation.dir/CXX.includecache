@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alva/ImageProcessing/ImageProcessing/Core/Common.h
+
+/home/alva/ImageProcessing/ImageProcessing/Core/ImageInterpolation.cpp
+memory.h
+-
+malloc.h
+-
+math.h
+-
+vector
+-
+iostream
+-
+Common.h
+/home/alva/ImageProcessing/ImageProcessing/Core/Common.h
+ImageInterpolation.h
+/home/alva/ImageProcessing/ImageProcessing/Core/ImageInterpolation.h
+
+/home/alva/ImageProcessing/ImageProcessing/Core/ImageInterpolation.h
+

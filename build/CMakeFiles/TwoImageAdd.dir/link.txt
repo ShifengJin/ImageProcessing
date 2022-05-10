@@ -1,0 +1,2 @@
+/usr/bin/ar qc libTwoImageAdd.a  CMakeFiles/TwoImageAdd.dir/Core/TwoImageAdd.cpp.o
+/usr/bin/ranlib libTwoImageAdd.a
