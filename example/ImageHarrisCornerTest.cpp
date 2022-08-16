@@ -36,13 +36,13 @@ int main(int argc, char* argv[]){
     float* Gauss_IxIy = (float*)calloc(width * height, sizeof(float));
     float* MR = (float*)calloc(width * height, sizeof(float));
 
-    Normalization<unsigned char, float>(image, rgb, width * height * channels, 0.f, 1.f);
+    Utily::Normalize<unsigned char, float>(image, rgb, width * height * channels, 0.f, 1.f);
     
-    RGB2Gray(rgb, gray, width, height);
+    Utily::RGB2Gray(rgb, gray, width, height);
 #if 0
     {
         unsigned char* tmp = (unsigned char*)calloc(width * height, sizeof(unsigned char));
-        Normalization<float, unsigned char>(gray, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(gray, tmp, width * height, 0, 255);
 
         stbi_write_jpg("gray.jpg", width, height, STBI_grey, tmp, 100);
         FREE_Memory(tmp);
@@ -57,30 +57,30 @@ int main(int argc, char* argv[]){
 
     HarrisCorner(gray, width, height, CornerCoordiantes, k, ksize, GaussKernel, Ix2, Iy2, IxIy, Gauss_Ix2, Gauss_Iy2, Gauss_IxIy, MR, 5);
     
-#if 1
+#if 0
     {
         unsigned char* tmp = (unsigned char*)calloc(width * height, sizeof(unsigned char));
-        Normalization<float, unsigned char>(Ix2, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(Ix2, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("Ix2.jpg", width, height, STBI_grey, tmp, 100);
 
-        Normalization<float, unsigned char>(Iy2, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(Iy2, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("Iy2.jpg", width, height, STBI_grey, tmp, 100);
 
-        Normalization<float, unsigned char>(IxIy, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(IxIy, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("IxIy.jpg", width, height, STBI_grey, tmp, 100);
         
-        Normalization<float, unsigned char>(Gauss_Ix2, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(Gauss_Ix2, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("Gauss_Ix2.jpg", width, height, STBI_grey, tmp, 100);
 
-        Normalization<float, unsigned char>(Gauss_Iy2, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(Gauss_Iy2, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("Gauss_Iy2.jpg", width, height, STBI_grey, tmp, 100);
 
-        Normalization<float, unsigned char>(Gauss_IxIy, tmp, width * height, 0, 255);
+        Utily::Normalize<float, unsigned char>(Gauss_IxIy, tmp, width * height, 0, 255);
         DrawPointToImageGray(tmp, tmp, width, height, (unsigned char)255, CornerCoordiantes);
         stbi_write_jpg("Gauss_IxIy.jpg", width, height, STBI_grey, tmp, 100);
 

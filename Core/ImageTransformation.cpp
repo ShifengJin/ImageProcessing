@@ -2,8 +2,7 @@
 #include "Common.h"
 #include "ImageTransformation.h"
 
-
-void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height){
+void Utily::RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height){
     int size = width * height;
     unsigned char* inRgb = rgb;
     unsigned char* outGray = gray;
@@ -18,7 +17,22 @@ void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height){
     }
 }
 
-void RGB2Gray(float* rgb, float* gray, int width, int height){
+void Utily::RGB2Gray(unsigned char* rgb, float* gray, int width, int height){
+    int size = width * height;
+    unsigned char* inRgb = rgb;
+    float* outGray = gray;
+    for(int i = 0; i < size; ++ i){
+        unsigned char r = *inRgb;
+        unsigned char g = *(inRgb + 1);
+        unsigned char b = *(inRgb + 2);
+        *outGray = CLAMP(CVT_Y_255(r, g, b), 0.f, 255.f);
+        
+        inRgb += 3;
+        outGray += 1;
+    }
+}
+
+void Utily::RGB2Gray(float* rgb, float* gray, int width, int height){
     int size = width * height;
     float * inRgb = rgb;
     float * outGray = gray;

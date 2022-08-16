@@ -4,43 +4,49 @@
 #include <vector>
 #include "Common.h"
 
-void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height);
-void RGB2Gray(float* rgb, float* gray, int width, int height);
-
-template<typename T, typename O>
-void FindMinMax(T* in, int size, O* minV, O* maxV);
-
-template<typename I, typename O>
-void Normalization(I* in, O* out, int size, float minV, float maxV);
-
-
 void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Color_UChar color, std::vector<Coordinate_i> coordinates);
 void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, int height, unsigned char color, std::vector<Coordinate_i> coordinates);
 
-template<typename T, typename O>
-void FindMinMax(T* in, int size, O* minV, O* maxV) {
-    *minV = (O)999999;
-    *maxV = -(*minV);
-    for (int i = 0; i < size; ++i) {
-        O v = (O)(in[i]);
-        if (v > *maxV) {
-            *maxV = v;
+class Utily{
+public:
+
+    static void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height);
+
+    static void RGB2Gray(unsigned char* rgb, float* gray, int width, int height);
+
+    // normalize rgb2gray
+    static void RGB2Gray(float* rgb, float* gray, int width, int height);
+
+    template<typename T>
+    static void FindMinMax(T* in, int size, T& oMin, T& oMax);
+
+    template<typename I, typename O>
+    static void Normalize(I* in, O* out, int size, O minValue, O maxValue);
+};
+
+template<typename T>
+inline void Utily::FindMinMax(T* in, int size, T& oMin, T& oMax){
+    oMin = (T)999999999;
+    oMax = (T)-9999999999;
+
+    for(int i = 0; i < size; ++ i){
+        if(in[i] > oMax){
+            oMax = in[i];
         }
-        if (v < *minV) {
-            *minV = v;
+        if(in[i] < oMin){
+            oMin = in[i];
         }
     }
 }
 
 template<typename I, typename O>
-void Normalization(I* in, O* out, int size, float minV, float maxV) {
-    I minValue = (I)99999, maxValue = (I)-99999;
-    FindMinMax<I, I>(in, size, &minValue, &maxValue);
-
-    // 归一化
-    float normalizeOneInv = 1.f / (maxValue - minValue) * (maxV - minV);
-    for (int i = 0; i < size; ++i) {
-        out[i] = (O)((float)(in[i] - minValue) * normalizeOneInv + minV);
+inline void Utily::Normalize(I* in, O* out, int size, O minValue, O maxValue){
+    I minV, maxV;
+    Utily::FindMinMax<I>(in, size, minV, maxV);
+    double inv = 1. / (maxV - minV);
+    double diff = maxValue - minValue;
+    for(int i = 0; i < size; ++ i){
+        out[i] = (O)(((double)in[i] - minV) * inv * diff + minValue);
     }
 }
 

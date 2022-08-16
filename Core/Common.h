@@ -1,6 +1,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <float.h>
+
 #define PI 3.1415926f
 #define CLAMP(x, a, b) ((x) > (b) ? (b) : ((x) < (a) ? (a) : (x)))
 #define ANGLE2RAD 0.01745329f
@@ -26,7 +28,6 @@
 #define CVT_V_Normal(r, g, b) ( 0.439f * (r) - 0.368f * (g) - 0.071f * (b) + 0.5f)
 
 #define FREE_Memory(ptr) do{if(ptr){free(ptr); ptr = NULL;}}while(0)
-
 
 
 typedef struct _Coordinate_i_{

@@ -29,9 +29,9 @@ int main(int argc, char* argv[]){
     float* gray = (float*)calloc(width * height, sizeof(float));
     float* score = (float*)calloc(width * height, sizeof(float));    
 
-    Normalization<unsigned char, float>(image, rgb, width * height * channels, 0.f, 1.f);
+    Utily::Normalize<unsigned char, float>(image, rgb, width * height * channels, 0.f, 1.f);
     
-    RGB2Gray(rgb, gray, width, height);
+    Utily::RGB2Gray(rgb, gray, width, height);
     std::vector<Coordinate_i> CornerCoordiantes;
     int maskRadius = 3;
     int unSuppressionRadius = 5;

@@ -411,7 +411,6 @@ void ImageGlass(float* src, int width, int height, int channels, float* dst, int
     }
 }
 
-
 void BilaternalColorFilter(float* ofilter, float sigma){
     float colorSigmaInv = 0.5f / (sigma * sigma);
     for(int i = 0; i < 256; ++ i){
