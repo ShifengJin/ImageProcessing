@@ -6,15 +6,15 @@ set(workpath ./../../../)
 
 set(CORE_INCLUDE_DIR ${workpath}Core)
 
-set(ImageBlurLib ImageBlur)
+set(libImageProcessing ImageProcessing)
 
 include_directories(
         ${CORE_INCLUDE_DIR} 
         ${workpath}ThirdLibrary/stb_image
         )
 
-set(SRC ${workpath}example/ImageBlurTest.cpp)
+set(SRC ${workpath}example/ImageBlurTest.cpp )
 
 add_executable(${PROJECT_NAME} ${SRC})
-target_link_libraries(${PROJECT_NAME} ${ImageBlurLib})
+target_link_libraries(${PROJECT_NAME} ${libImageProcessing})
 

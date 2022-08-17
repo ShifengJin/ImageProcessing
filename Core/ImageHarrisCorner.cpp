@@ -5,6 +5,7 @@
 #include "ImageBlur.h"
 #include "Common.h"
 #include "ImageHarrisCorner.h"
+#include "ImageTransformation.h"
 
 static void M(float* gray, int width, int height, float* oIx2, float* oIy2, float* IxIy){
 
@@ -20,7 +21,7 @@ static void M(float* gray, int width, int height, float* oIx2, float* oIy2, floa
         -1.f, 0.f, 1.f,
         -1.f, 0.f, 1.f
     };
-    ImageConvolution(inGray, width, height, 1, outIx, ixKernel, 3);
+    Utily::ImageConvolution(inGray, width, height, 1, outIx, ixKernel, 3);
     // Iy
     float* outIy = oIy2;
     float iyKernel[9] = {
@@ -28,7 +29,7 @@ static void M(float* gray, int width, int height, float* oIx2, float* oIy2, floa
          0.f,  0.f,  0.f,
          1.f,  1.f,  1.f
     };
-    ImageConvolution(inGray, width, height, 1, outIy, iyKernel, 3);
+    Utily::ImageConvolution(inGray, width, height, 1, outIy, iyKernel, 3);
 
     for(int i = 0; i < height; ++ i){
         for(int j = 0; j < width; ++ j){
@@ -59,9 +60,9 @@ void HarrisCorner(float* gray, int width, int height, std::vector<Coordinate_i>&
 
     M(gray, width, height, Ix2, Iy2, IxIy);
 
-    ImageConvolution(Ix2, width, height, 1, Gauss_Ix2, GaussFilter, ksize);
-    ImageConvolution(Iy2, width, height, 1, Gauss_Iy2, GaussFilter, ksize);
-    ImageConvolution(IxIy, width, height, 1, Gauss_IxIy, GaussFilter, ksize);
+    Utily::ImageConvolution(Ix2, width, height, 1, Gauss_Ix2, GaussFilter, ksize);
+    Utily::ImageConvolution(Iy2, width, height, 1, Gauss_Iy2, GaussFilter, ksize);
+    Utily::ImageConvolution(IxIy, width, height, 1, Gauss_IxIy, GaussFilter, ksize);
     int size = width * height;
 
     float absMaxValue = 0.f;

@@ -10,18 +10,6 @@ typedef enum _BLURTYPE_{
     BILATERNAL = 5,
 }BLURTYPE;
 
-void GaussFilter(int ksize, float sigma, float* ofilter);
-void MotionFilter(int ksize, float angle, float* ofilter);
-void BilaternalColorFilter(float* ofilter, float sigma);
-
-void ImageConvolution(
-    unsigned char* src, int width, int height, int channels,
-    unsigned char* dst, float* filter, int ksize);
-
-void ImageConvolution(
-    float* src, int width, int height, int channels,
-    float* dst, float* filter, int ksize);
-
 void ImageMedian(unsigned char* src, int width, int height, int channels, unsigned char* dst, int ksize);
 void ImageMedian(float* src, int width, int height, int channels, float* dst, int ksize);
 

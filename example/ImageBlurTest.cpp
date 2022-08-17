@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "ImageTransformation.h"
 #include "ImageBlur.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -40,16 +41,16 @@ int main(int argc, char* argv[]){
                     sigma = atof(argv[5]);
                 }
                 std::vector<float> filter(ksize * ksize, 0.f);
-                GaussFilter(ksize, sigma, filter.data());
-                ImageConvolution(image, width, height, channels, oImageBuffer, filter.data(), ksize);
+                Utily::GaussFilter(ksize, sigma, filter.data());
+                Utily::ImageConvolution(image, width, height, channels, oImageBuffer, filter.data(), ksize);
             }
             break;
             case MOTION:
             {
                 std::vector<float> filter(ksize * ksize, 0.f);
                 float angle = atof(argv[5]);
-                MotionFilter(ksize, angle, filter.data());
-                ImageConvolution(image, width, height, channels, oImageBuffer, filter.data(), ksize);
+                Utily::MotionFilter(ksize, angle, filter.data());
+                Utily::ImageConvolution(image, width, height, channels, oImageBuffer, filter.data(), ksize);
             }
             break;
             case MEDIAN:
@@ -82,9 +83,9 @@ int main(int argc, char* argv[]){
                 }
 
                 std::vector<float> gaussFilter(ksize * ksize, 0.f);
-                GaussFilter(ksize, sigma, gaussFilter.data());
+                Utily::GaussFilter(ksize, sigma, gaussFilter.data());
                 float colorFilter[256] = {0.f};
-                BilaternalColorFilter(colorFilter, colorSigma);
+                Utily::BilaternalColorFilter(colorFilter, colorSigma);
                 ImageBilaternal(image, width, height, channels, oImageBuffer, gaussFilter.data(), ksize, colorFilter);
             }
             break;

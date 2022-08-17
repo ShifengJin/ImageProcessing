@@ -52,7 +52,7 @@ int main(int argc, char* argv[]){
     int ksize = 3;
     float sigma = 1.5f;
     float* GaussKernel = (float*)calloc(ksize * ksize, sizeof(float));
-    GaussFilter(ksize, sigma, GaussKernel);
+    Utily::GaussFilter(ksize, sigma, GaussKernel);
     std::vector<Coordinate_i> CornerCoordiantes;
 
     HarrisCorner(gray, width, height, CornerCoordiantes, k, ksize, GaussKernel, Ix2, Iy2, IxIy, Gauss_Ix2, Gauss_Iy2, Gauss_IxIy, MR, 5);

@@ -6,7 +6,7 @@ set(workpath ./../../../)
 
 set(CORE_INCLUDE_DIR ${workpath}Core)
 
-set(ImageInterpolationLib ImageInterpolation)
+set(libImageProcessing ImageProcessing)
 
 include_directories(
         ${CORE_INCLUDE_DIR} 
@@ -16,5 +16,5 @@ include_directories(
 set(SRC ${workpath}example/ImageInterpolationTest.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
-target_link_libraries(${PROJECT_NAME} ${ImageInterpolationLib})
+target_link_libraries(${PROJECT_NAME} ${libImageProcessing})
 

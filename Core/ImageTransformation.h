@@ -10,6 +10,16 @@ void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, 
 class Utily{
 public:
 
+    static void GaussFilter(int ksize, float sigma, float* ofilter);
+
+    static void MotionFilter(int ksize, float angle, float* ofilter);
+
+    static void BilaternalColorFilter(float* ofilter, float sigma);
+
+    static void ImageConvolution(unsigned char* src, int width, int height, int channels, unsigned char* dst, float* filter, int ksize);
+
+    static void ImageConvolution(float* src, int width, int height, int channels, float* dst, float* filter, int ksize);
+
     static void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height);
 
     static void RGB2Gray(unsigned char* rgb, float* gray, int width, int height);
@@ -22,6 +32,10 @@ public:
 
     template<typename I, typename O>
     static void Normalize(I* in, O* out, int size, O minValue, O maxValue);
+
+private:
+    static void ConvUInt8(unsigned char* in, unsigned char* out, int width, int channels, float* filter, int ksize);
+    static void ConvFloat(float* in, float* out, int width, int channels, float* filter, int ksize);
 };
 
 template<typename T>

@@ -80,6 +80,9 @@ int main(int argc, char* argv[]){
             break;
             case EDGE_CANNY:
             {
+                Canny::ptr pCanny = Canny::ptr(new Canny(width, height));
+                pCanny->Run(imageGrayFloat, imageEdgefloat);
+                pCanny.reset();
                 break;
             }
             break;

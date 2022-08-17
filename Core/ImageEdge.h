@@ -38,7 +38,7 @@ public:
         FREE_Memory(m_edgeY);
     }
 
-    void Run(float* inGray, float* out, MAGTYPE magType);
+    void Run(float* inGray, float* out, MAGTYPE magType, float* oEdgeX = nullptr, float* oEdgeY = nullptr);
 
     int m_width, m_height;
 
@@ -130,5 +130,48 @@ private:
 
 };
 
+class Canny{
+public:
+    typedef std::shared_ptr<Canny> ptr;
+    Canny(int width, int height): m_width(width), m_height(height){
+        m_edgeX = (float*)calloc(m_width * m_height, sizeof(float));
+        m_edgeY = (float*)calloc(m_width * m_height, sizeof(float));
+        m_gaussImage = (float*)calloc(m_width * m_height, sizeof(float));
+        m_edgeMag = (float*)calloc(m_width * m_height, sizeof(float));
+        m_edgeMag_noMaxsup = (float*)calloc(m_width * m_height, sizeof(float));
+        m_pSobel = Sobel::ptr(new Sobel(m_width, m_height));
+    }
+
+    void Run(float* in, float* out, float TH = 80.f, float TL = 20.f, int gaussR = 1, float sigma = 1.4f, MAGTYPE magType = MAG_L2);
+
+    ~Canny(){
+        FREE_Memory(m_edgeX);
+        FREE_Memory(m_edgeY);
+        FREE_Memory(m_gaussImage);
+        FREE_Memory(m_edgeMag);
+        FREE_Memory(m_edgeMag_noMaxsup);
+        m_pSobel.reset();
+    }
+
+    int m_width, m_height;
+
+private:
+    void noMax(float* edgeMag, float* edgeX, float* edgeY, float* edgeMag_noMaxsup);
+    void trace(float* edgeMag_noMaxsup, float* out, int x, int y, float TL);
+    bool checkInRange(int x, int y, int width, int height){
+        return (x >= 0 && x < width && y >= 0 && y < height);
+    }
+private:
+    float* m_edgeX;
+    float* m_edgeY;
+    float* m_gaussImage;
+    float* m_edgeMag;
+    float* m_edgeMag_noMaxsup;
+
+    float m_TH, m_TL;
+
+    Sobel::ptr m_pSobel;
+    
+};
 
 #endif
