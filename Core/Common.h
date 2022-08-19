@@ -35,6 +35,8 @@ typedef struct _Coordinate_i_{
     int y;
 }Coordinate_i;
 
+typedef Coordinate_i ImgSize;
+
 typedef struct _Coordinate_f_{
     float x;
     float y;

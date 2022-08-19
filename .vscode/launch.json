@@ -6,12 +6,12 @@
       "type": "cppdbg",
       "request": "launch",
       "args": [
-        ""
+        "/home/alva/ImageProcessing/ImageProcessing/Data/1.jpg"
       ],
       "stopAtEntry": false,
       "cwd": "/home/alva/ImageProcessing/ImageProcessing",
       "environment": [],
-      "program": "/home/alva/ImageProcessing/ImageProcessing/build/Debug/outDebug",
+      "program": "/home/alva/ImageProcessing/ImageProcessing/build/cmake/example/ImageSIFT/ImageSIFTTest",
       "internalConsoleOptions": "openOnSessionStart",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",

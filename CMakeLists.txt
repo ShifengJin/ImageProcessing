@@ -30,8 +30,9 @@ set(CORE_ROOT ./Core)
 
 # Build All
 aux_source_directory(${CORE_ROOT} SRC)
+message(${SRC})
 add_library(ImageProcessing STATIC ${SRC})
-target_include_directories(ImageProcessing PUBLIC ${CORE_ROOT})
+target_include_directories(ImageProcessing PUBLIC ${CORE_ROOT} ${CORE_ROOT}/../ThirdLibrary/stb_image)
 
 add_subdirectory(cmake/example/TwoImageAdd)
 add_subdirectory(cmake/example/ImageInterpolation)
@@ -41,3 +42,4 @@ add_subdirectory(cmake/example/ImageHarrisCorner)
 add_subdirectory(cmake/example/ImageSusanCorner)
 add_subdirectory(cmake/example/ImageFastCorner)
 add_subdirectory(cmake/example/ImageEdge)
+add_subdirectory(cmake/example/ImageSIFT)

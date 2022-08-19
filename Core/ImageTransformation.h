@@ -1,7 +1,11 @@
 #ifndef _IMAGETRANSFORMATION_H_
 #define _IMAGETRANSFORMATION_H_
 
+#include "stb_image.h"
+#include "stb_image_write.h"
+
 #include <vector>
+#include <string>
 #include "Common.h"
 
 void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Color_UChar color, std::vector<Coordinate_i> coordinates);
@@ -19,6 +23,9 @@ public:
     static void ImageConvolution(unsigned char* src, int width, int height, int channels, unsigned char* dst, float* filter, int ksize);
 
     static void ImageConvolution(float* src, int width, int height, int channels, float* dst, float* filter, int ksize);
+    static void ImageConvolution1(float* src, int width, int height, int channels, float* dst, float* filter, int ksize);
+
+    static void TwoImageDiff(float* img0, float* img1, int width, int height, int channels, float* out);
 
     static void RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height);
 
@@ -32,6 +39,9 @@ public:
 
     template<typename I, typename O>
     static void Normalize(I* in, O* out, int size, O minValue, O maxValue);
+
+    template<typename T>
+    static void SaveImage(std::string path, int width, int height, int channels, T* img);
 
 private:
     static void ConvUInt8(unsigned char* in, unsigned char* out, int width, int channels, float* filter, int ksize);
@@ -62,6 +72,18 @@ inline void Utily::Normalize(I* in, O* out, int size, O minValue, O maxValue){
     for(int i = 0; i < size; ++ i){
         out[i] = (O)(((double)in[i] - minV) * inv * diff + minValue);
     }
+}
+
+template<typename T>
+inline void Utily::SaveImage(std::string path, int width, int height, int channels, T* img){
+    unsigned char* saveBuffer = (unsigned char*)calloc(width * height * channels, sizeof(unsigned char));
+    Utily::Normalize<T, unsigned char>(img, saveBuffer, width * height * channels, (unsigned char)0, (unsigned char)255);
+    if(channels == 1){
+        stbi_write_jpg(path.c_str(), width, height, STBI_grey, saveBuffer, 100);
+    }else if(channels == 3){
+        stbi_write_jpg(path.c_str(), width, height, STBI_rgb, saveBuffer, 100);
+    }
+    FREE_Memory(saveBuffer);
 }
 
 #endif

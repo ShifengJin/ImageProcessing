@@ -220,6 +220,36 @@ void Utily::ImageConvolution(float* src, int width, int height, int channels, fl
     }
 }
 
+
+void Utily::ImageConvolution1(float* src, int width, int height, int channels, float* dst, float* filter, int ksize){
+    size_t size = (size_t)width * (size_t)height * sizeof(float) * channels;
+
+    int offset = ksize / 2;
+
+    int startX = offset;
+    int endX = width - offset;
+
+    int startY = offset;
+    int endY = height - offset;
+    
+    memset(dst, 0, size);
+    
+    for (int i = offset; i < height - offset; ++i) {
+        int yoffset = i * width * channels;
+        for (int j = offset; j < width - offset; ++j) {
+            int xoffset = yoffset + j * channels;
+            ConvFloat((src + xoffset), (dst + xoffset), width, channels, filter, ksize);
+        }
+    }
+}
+
+void Utily::TwoImageDiff(float* img0, float* img1, int width, int height, int channels, float* out){
+    int size = width * height * channels;
+    for(int i = 0; i < size; ++i){
+        out[i] = img0[i] - img1[i];
+    }
+}
+
 void Utily::RGB2Gray(unsigned char* rgb, unsigned char* gray, int width, int height){
     int size = width * height;
     unsigned char* inRgb = rgb;
