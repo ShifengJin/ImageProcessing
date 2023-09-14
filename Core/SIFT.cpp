@@ -116,7 +116,7 @@ void SIFT::Run(float* gray){
         }
     }
 
-#if 1
+#if 0
     {
         for(int o = 0; o < m_octave; ++ o){
             for(int s = 0; s < m_scale + 2; ++ s){
@@ -126,7 +126,70 @@ void SIFT::Run(float* gray){
         }
     }
 #endif
-    // 
+    m_O_S_Coordiantes.clear();
+    // check extreme point
+    for(int o = 0; o < m_octave; ++ o){
+        for(int s = 1; s < m_scale + 1; ++ s){
+            float* downImg = m_O_S_DOGImgs[o][s - 1];
+            float* curImg = m_O_S_DOGImgs[o][s];
+            float* upImg = m_O_S_DOGImgs[o][s + 1];
+
+            int height = m_O_Size[o].y;
+            int width = m_O_Size[o].x;
+
+            std::vector<Feature> oFeatures;
+
+            for(int i = 1; i < height - 1; ++ i){
+                for(int j = 1; j < width - 1; ++ j){
+                    float m111 = curImg[i * width + j];
+
+                    float m000 = downImg[(i - 1) * width + j - 1];
+                    float m001 = downImg[(i - 1) * width + j];
+                    float m002 = downImg[(i - 1) * width + j + 1];
+                    float m010 = downImg[i * width + j - 1];
+                    float m011 = downImg[i * width + j];
+                    float m012 = downImg[i * width + j + 1];
+                    float m020 = downImg[(i + 1) * width + j - 1];
+                    float m021 = downImg[(i + 1) * width + j];
+                    float m022 = downImg[(i + 1) * width + j + 1];
+                    
+                    float m100 = curImg[(i - 1) * width + j - 1];
+                    float m101 = curImg[(i - 1) * width + j];
+                    float m102 = curImg[(i - 1) * width + j + 1];
+                    float m110 = curImg[i * width + j - 1];
+                    float m112 = curImg[i * width + j + 1];
+                    float m120 = curImg[(i + 1) * width + j - 1];
+                    float m121 = curImg[(i + 1) * width + j];
+                    float m122 = curImg[(i + 1) * width + j + 1];
+
+                    float m200 = upImg[(i - 1) * width + j - 1];
+                    float m201 = upImg[(i - 1) * width + j];
+                    float m202 = upImg[(i - 1) * width + j + 1];
+                    float m210 = upImg[i * width + j - 1];
+                    float m211 = upImg[i * width + j];
+                    float m212 = upImg[i * width + j + 1];
+                    float m220 = upImg[(i + 1) * width + j - 1];
+                    float m221 = upImg[(i + 1) * width + j];
+                    float m222 = upImg[(i + 1) * width + j + 1];
+                    // find extreme point
+                    if((m111 > m000 && m111 > m001 && m111 > m002 && m111 > m010 && m111 > m011 && m111 > m012 && m111 > m020 && m111 > m021 && m111 > m022 && 
+                        m111 > m100 && m111 > m101 && m111 > m102 && m111 > m110 &&                m111 > m112 && m111 > m120 && m111 > m121 && m111 > m122 && 
+                        m111 > m200 && m111 > m201 && m111 > m202 && m111 > m210 && m111 > m211 && m111 > m212 && m111 > m220 && m111 > m221 && m111 > m222) || 
+                       (m111 < m000 && m111 < m001 && m111 < m002 && m111 < m010 && m111 < m011 && m111 < m012 && m111 < m020 && m111 < m021 && m111 < m022 && 
+                        m111 < m100 && m111 < m101 && m111 < m102 && m111 < m110 &&                m111 < m112 && m111 < m120 && m111 < m121 && m111 < m122 && 
+                        m111 < m200 && m111 < m201 && m111 < m202 && m111 < m210 && m111 < m211 && m111 < m212 && m111 < m220 && m111 < m221 && m111 < m222)){
+                        Feature feature;
+                        feature.m_octave = o;
+                        feature.m_scale = s;
+                        feature.m_o_s_coordiante.x = j;
+                        feature.m_o_s_coordiante.y = i;
+                        oFeatures.push_back(feature);
+                    }
+                }
+            }
+            m_O_S_Coordiantes.push_back(oFeatures);
+        }
+    }
 }
     
 SIFT::~SIFT(){

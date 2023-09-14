@@ -21,6 +21,26 @@ public:
             m_coordiante = feat.m_coordiante;
         }
 
+        Feature(const Feature& feat){
+            memcpy(m_feature, feat.m_feature, 32 * sizeof(float));
+            m_dir = feat.m_dir;
+            m_octave = feat.m_octave;
+            m_scale = feat.m_scale;
+            m_o_s_coordiante = feat.m_o_s_coordiante;
+            m_coordiante = feat.m_coordiante;
+        }
+
+        Feature(){
+            memset(m_feature, 0, 32 * sizeof(float));
+            m_dir = 0.f;
+            m_octave = 0.f;
+            m_scale = 0.f;
+            m_o_s_coordiante.x = 0.f;
+            m_o_s_coordiante.y = 0.f;
+            m_coordiante.x = 0.f;
+            m_coordiante.y = 0.f;
+        }
+
         Feature& operator=(const Feature& feat){
             memcpy(m_feature, feat.m_feature, 32 * sizeof(float));
             m_dir = feat.m_dir;
