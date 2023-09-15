@@ -57,6 +57,8 @@ public:
         float m_scale;
         Coordiante_f m_o_s_coordiante;
         Coordiante_f m_coordiante;
+        float Jacobi[3]; 
+        float Hession[9];
     };
 
 public:

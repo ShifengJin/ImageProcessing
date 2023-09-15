@@ -183,6 +183,24 @@ void SIFT::Run(float* gray){
                         feature.m_scale = s;
                         feature.m_o_s_coordiante.x = j;
                         feature.m_o_s_coordiante.y = i;
+
+                        feature.Jacobi[0] = (m112 - m110) * 0.5f;
+                        feature.Jacobi[1] = (m121 - m101) * 0.5f;
+                        feature.Jacobi[2] = (m211 - m011) * 0.5f;
+
+                        feature.Hession[0] = (m112 + m110) - 2.f * m111;
+                        feature.Hession[1] = ((m122 - m120) - (m102 - m100)) * 0.25f;
+                        feature.Hession[2] = ((m212 - m210) - (m012 - m010)) * 0.25f;
+
+                        feature.Hession[3] = ((m122 - m102) - (m120 - m100)) * 0.25f;
+                        feature.Hession[4] = (m121 + m101) - 2.f * m111;
+                        feature.Hession[5] = ((m221 - m201) - (m021 - m001)) * 0.25f;
+
+                        feature.Hession[6] = ((m212 - m012) - (m210 - m010)) * 0.25f;
+                        feature.Hession[7] = ((m221 - m021) - (m201 - m001)) * 0.25f;
+                        feature.Hession[8] = (m211 + m011) - 2.f * m111;
+
+
                         oFeatures.push_back(feature);
                     }
                 }
