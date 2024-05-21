@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
     float sigma = 1.5f;
     float* GaussKernel = (float*)calloc(ksize * ksize, sizeof(float));
     Utily::GaussFilter(ksize, sigma, GaussKernel);
-    std::vector<Coordinate_i> CornerCoordiantes;
+    std::vector<Vector2i> CornerCoordiantes;
 
     HarrisCorner(gray, width, height, CornerCoordiantes, k, ksize, GaussKernel, Ix2, Iy2, IxIy, Gauss_Ix2, Gauss_Iy2, Gauss_IxIy, MR, 5);
     
@@ -88,8 +88,9 @@ int main(int argc, char* argv[]){
     }
 #endif
 
-
-    DrawPointToImageRGB(image, image, width, height, {(unsigned char)0, (unsigned char)0, (unsigned char)0}, CornerCoordiantes);
+    Vector3UC color;
+    color.x = 0; color.y = 0; color.z = 0;
+    DrawPointToImageRGB(image, image, width, height, color, CornerCoordiantes);
 
     stbi_write_jpg(outImagePath.c_str(), width, height, STBI_rgb, image, 100);
     stbi_image_free(image);

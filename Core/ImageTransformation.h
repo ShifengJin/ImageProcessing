@@ -8,8 +8,8 @@
 #include <string>
 #include "Common.h"
 
-void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Color_UChar color, std::vector<Coordinate_i> coordinates);
-void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, int height, unsigned char color, std::vector<Coordinate_i> coordinates);
+void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Vector3UC& color, std::vector<Vector2i>& coordinates);
+void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, int height, unsigned char color, std::vector<Vector2i> coordinates);
 
 class Utily{
 public:

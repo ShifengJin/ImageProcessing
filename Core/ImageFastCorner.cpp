@@ -39,7 +39,7 @@ float cornerScore(const float* ptr, const int pixel[], int threshold, int number
     return score;
 }
 
-void FastCorner_16_9(float* gray, int width, int height, std::vector<Coordinate_i>& oCornerCoordiantes, float threshold, bool nonmax_suppression, int unSuppressionRadius, float* score){
+void FastCorner_16_9(float* gray, int width, int height, std::vector<Vector2i>& oCornerCoordiantes, float threshold, bool nonmax_suppression, int unSuppressionRadius, float* score){
     const int patternSize = 16;
     const int K = patternSize / 2;
     const int N = patternSize + K + 1;
@@ -63,7 +63,7 @@ void FastCorner_16_9(float* gray, int width, int height, std::vector<Coordinate_
         float tmp = i / 255.f;
         threshold_tab[i + 255] = (unsigned char)(tmp < -threshold ? 1 : (tmp > threshold ? 2 : 0));
     }
-    std::vector<Coordinate_i> tmpCornerCoordiantes;
+    std::vector<Vector2i> tmpCornerCoordiantes;
     for(int i = 3; i < height - 3; ++ i){
         const float* ptr = gray + i * width + 3;
         int ncorners = 0;

@@ -30,28 +30,33 @@
 #define FREE_Memory(ptr) do{if(ptr){free(ptr); ptr = NULL;}}while(0)
 
 
-typedef struct _Coordinate_i_{
+typedef struct _Vector2i_{
     int x;
     int y;
-}Coordinate_i;
+}Vector2i;
 
-typedef Coordinate_i ImgSize;
+typedef struct _Vector2U_{
+    unsigned int x;
+    unsigned int y;
+}Vector2U;
 
-typedef struct _Coordinate_f_{
+typedef Vector2U ImgSize;
+
+typedef struct _Vector2f_{
     float x;
     float y;
-}Coordiante_f;
+}Vector2f;
 
-typedef struct _Color_UChar_{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-}Color_UChar;
+typedef struct _Vector3UC_{
+    unsigned char x;
+    unsigned char y;
+    unsigned char z;
+}Vector3UC;
 
-typedef struct _Color_f_{
-    float r;
-    float g;
-    float b;
-}Color_f;
+typedef struct _Vector3f_{
+    float x;
+    float y;
+    float z;
+}Vector3f;
 
 #endif

@@ -56,7 +56,7 @@ static bool checkIsLocalMax(float* mr, int x, int y, int width, int localSize, f
     return true;
 }
 
-void HarrisCorner(float* gray, int width, int height, std::vector<Coordinate_i>& oCornerCoordiantes, float k, int ksize, float* GaussFilter, float* Ix2, float* Iy2, float* IxIy, float* Gauss_Ix2, float* Gauss_Iy2, float* Gauss_IxIy, float* MR, int localSize){
+void HarrisCorner(float* gray, int width, int height, std::vector<Vector2i>& oCornerCoordiantes, float k, int ksize, float* GaussFilter, float* Ix2, float* Iy2, float* IxIy, float* Gauss_Ix2, float* Gauss_Iy2, float* Gauss_IxIy, float* MR, int localSize){
 
     M(gray, width, height, Ix2, Iy2, IxIy);
 

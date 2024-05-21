@@ -220,7 +220,6 @@ void Utily::ImageConvolution(float* src, int width, int height, int channels, fl
     }
 }
 
-
 void Utily::ImageConvolution1(float* src, int width, int height, int channels, float* dst, float* filter, int ksize){
     size_t size = (size_t)width * (size_t)height * sizeof(float) * channels;
 
@@ -295,7 +294,7 @@ void Utily::RGB2Gray(float* rgb, float* gray, int width, int height){
     }
 }
 
-void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Color_UChar color, std::vector<Coordinate_i> coordinates){
+void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int height, Vector3UC& color, std::vector<Vector2i>& coordinates){
     if(rgb != oRgb)
         memcpy(oRgb, rgb, sizeof(unsigned char) * width * height * 3);
 
@@ -305,38 +304,43 @@ void DrawPointToImageRGB(unsigned char* rgb, unsigned char* oRgb, int width, int
         int y = coordinates[i].y;
 
         if(y - 1 >= 0 && x >= 0 && y - 1 < height && x < width){
-            oRgb[((y - 1) * width + x) * 3 + 0]  = color.r;
-            oRgb[((y - 1) * width + x) * 3 + 1]  = color.g;
-            oRgb[((y - 1) * width + x) * 3 + 2]  = color.b;
+            int index = ((y - 1) * width + x) * 3;
+            oRgb[index + 0]  = color.x;
+            oRgb[index + 1]  = color.y;
+            oRgb[index + 2]  = color.z;
         }
 
         if(y >= 0 && x - 1 >= 0 && y < height && x - 1 < width){
-            oRgb[(y * width + x - 1) * 3 + 0]  = color.r;
-            oRgb[(y * width + x - 1) * 3 + 1]  = color.g;
-            oRgb[(y * width + x - 1) * 3 + 2]  = color.b;
+            int index = (y * width + x - 1) * 3;
+            oRgb[index + 0]  = color.x;
+            oRgb[index + 1]  = color.y;
+            oRgb[index + 2]  = color.z;
         }
 
         if(y >= 0 && x >= 0 && y < height && x < width){
-            oRgb[(y * width + x) * 3 + 0]  = color.r;
-            oRgb[(y * width + x) * 3 + 1]  = color.g;
-            oRgb[(y * width + x) * 3 + 2]  = color.b;
+            int index = (y * width + x) * 3;
+            oRgb[index + 0]  = color.x;
+            oRgb[index + 1]  = color.y;
+            oRgb[index + 2]  = color.z;
         }
 
         if(y >= 0 && x + 1 >= 0 && y < height && x + 1 < width){
-            oRgb[(y * width + x + 1) * 3 + 0]  = color.r;
-            oRgb[(y * width + x + 1) * 3 + 1]  = color.g;
-            oRgb[(y * width + x + 1) * 3 + 2]  = color.b;
+            int index = (y * width + x + 1) * 3;
+            oRgb[index + 0]  = color.x;
+            oRgb[index + 1]  = color.y;
+            oRgb[index + 2]  = color.z;
         }
 
         if(y + 1 >= 0 && x >= 0 && y + 1 < height && x < width){
-            oRgb[((y + 1) * width + x) * 3 + 0]  = color.r;
-            oRgb[((y + 1) * width + x) * 3 + 1]  = color.g;
-            oRgb[((y + 1) * width + x) * 3 + 2]  = color.b;
+            int index = ((y + 1) * width + x) * 3;
+            oRgb[index + 0]  = color.x;
+            oRgb[index + 1]  = color.y;
+            oRgb[index + 2]  = color.z;
         }
     }
 }
 
-void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, int height, unsigned char color, std::vector<Coordinate_i> coordinates){
+void DrawPointToImageGray(unsigned char* gray, unsigned char* oGray, int width, int height, unsigned char color, std::vector<Vector2i>& coordinates){
     if(gray != oGray)
         memcpy(oGray, gray, sizeof(unsigned char) * width * height);
 

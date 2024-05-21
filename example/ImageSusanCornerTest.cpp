@@ -33,13 +33,15 @@ int main(int argc, char* argv[]){
     Utily::Normalize<unsigned char, float>(image, rgb, width * height * channels, 0.f, 1.f);
     
     Utily::RGB2Gray(rgb, gray, width, height);
-    std::vector<Coordinate_i> CornerCoordiantes;
+    std::vector<Vector2i> CornerCoordiantes;
     int maskRadius = 3;
     int unSuppressionRadius = 3;
     float threshold = 50.f / 255.f;
     SusanCorner(gray, width, height, CornerCoordiantes, maskRadius, unSuppressionRadius, threshold, R);
 
-    DrawPointToImageRGB(image, image, width, height, {(unsigned char)0, (unsigned char)0, (unsigned char)0}, CornerCoordiantes);
+    Vector3UC color;
+    color.x = 0; color.y = 0; color.z = 0;
+    DrawPointToImageRGB(image, image, width, height, color, CornerCoordiantes);
 
     stbi_write_jpg(outImagePath.c_str(), width, height, STBI_rgb, image, 100);
     stbi_image_free(image);

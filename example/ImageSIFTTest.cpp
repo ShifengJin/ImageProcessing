@@ -27,7 +27,7 @@ int main(int argc, char* argv[]){
     float* grayImageBuffer = (float*)calloc(width * height, sizeof(float));
     Utily::RGB2Gray(image, grayImageBuffer, width, height);
 
-    SIFT::ptr pSIFT = SIFT::ptr(new SIFT(width, height));
+    SIFT::ptr pSIFT = SIFT::ptr(new SIFT((unsigned int)width, (unsigned int)height));
     pSIFT->Run(grayImageBuffer);
     pSIFT.reset();
 

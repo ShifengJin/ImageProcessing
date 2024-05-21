@@ -57,8 +57,8 @@ static bool UnSuppression(float* tmpR, int width, int height, int x, int y, floa
     return true;
 }
 
-void SusanCorner(float* gray, int width, int height, std::vector<Coordinate_i>& oCornerCoordiantes, int maskRadius, int unSuppressionRadius, float threshold, float* tmpR){
-    std::vector<Coordinate_i> tmpCornerCoordiantes;
+void SusanCorner(float* gray, int width, int height, std::vector<Vector2i>& oCornerCoordiantes, int maskRadius, int unSuppressionRadius, float threshold, float* tmpR){
+    std::vector<Vector2i> tmpCornerCoordiantes;
     // make mask
     int size = 2 * maskRadius + 1;
     std::vector<std::vector<bool>> mask(size, std::vector<bool>(size, false));
