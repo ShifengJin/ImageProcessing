@@ -10,6 +10,12 @@
 class SIFT
 {
 
+#define SIFT_IMG_BORDER    5
+#define SIFT_ORI_HIST_BINS 36
+#define SIFT_THR_R         10.f
+#define SIFT_DX_THR        12.1f   // (SIFT_THR_R + 1) * (SIFT_THR_R + 1) / SIFT_THR_R
+#define SIFT_RESPONSE_TH   1.7f    
+
 public:
     class Feature
     {
@@ -20,9 +26,12 @@ public:
             m_dir              = feat.m_dir;
             m_octave           = feat.m_octave;
             m_level            = feat.m_level;
+            m_subLevel         = feat.m_subLevel;
             m_o_s_coordiante   = feat.m_o_s_coordiante;
             m_coordiante       = feat.m_coordiante;
             m_subCoordiante    = feat.m_subCoordiante;
+            m_pyramidLevel     = feat.m_pyramidLevel;
+            m_pyramidScale     = feat.m_pyramidScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
         }
@@ -33,9 +42,12 @@ public:
             m_dir              = feat.m_dir;
             m_octave           = feat.m_octave;
             m_level            = feat.m_level;
+            m_subLevel         = feat.m_subLevel;
             m_o_s_coordiante   = feat.m_o_s_coordiante;
             m_coordiante       = feat.m_coordiante;
             m_subCoordiante    = feat.m_subCoordiante;
+            m_pyramidLevel     = feat.m_pyramidLevel;
+            m_pyramidScale     = feat.m_pyramidScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
         }
@@ -46,14 +58,15 @@ public:
             m_dir              = 0.f;
             m_octave           = 0.f;
             m_level            = 0.f;
+            m_subLevel         = 0.f;
             m_o_s_coordiante.x = 0.f;
             m_o_s_coordiante.y = 0.f;
             m_coordiante.x     = 0.f;
             m_coordiante.y     = 0.f;
-            m_coordiante.z     = 0.f;
             m_subCoordiante.x  = 0.f;
             m_subCoordiante.y  = 0.f;
-            m_subCoordiante.z  = 0.f;
+            m_pyramidLevel     = 0.f;
+            m_pyramidScale     = 0.f;
             m_response         = 0.f;
             m_extremePointType = 0;
         }
@@ -64,9 +77,12 @@ public:
             m_dir              = feat.m_dir;
             m_octave           = feat.m_octave;
             m_level            = feat.m_level;
+            m_subLevel         = feat.m_subLevel;
             m_o_s_coordiante   = feat.m_o_s_coordiante;
             m_coordiante       = feat.m_coordiante;
             m_subCoordiante    = feat.m_subCoordiante;
+            m_pyramidLevel     = feat.m_pyramidLevel;
+            m_pyramidScale     = feat.m_pyramidScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
             return *this;
@@ -76,9 +92,12 @@ public:
         float    m_dir; // main dir
         float    m_octave;
         float    m_level;
-        Vector2f m_o_s_coordiante;   // x,y
-        Vector3f m_coordiante;       // x,y,z   (x,y) * scale
-        Vector3f m_subCoordiante;    // x,y,z 
+        float    m_subLevel;
+        Vector2f m_o_s_coordiante;   // x,y   for pyramid
+        Vector2f m_coordiante;       // x,y   (x,y) * scale + offset           for srcImgSize
+        Vector2f m_subCoordiante;    // x,y   (x+xi,y+yi) * scale + offset     for srcImgSize
+        float    m_pyramidLevel;
+        float    m_pyramidScale;
         float    m_response;
         int      m_extremePointType; // 1 big  2 little  0 default
     };

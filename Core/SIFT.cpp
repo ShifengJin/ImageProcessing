@@ -90,7 +90,7 @@ void SIFT::Run(float* gray){
     FindExtremePoint();
 
     // choose point
-    
+
 
     // ori and desc
 
@@ -169,11 +169,11 @@ void SIFT::FindExtremePoint(){
             unsigned int width  = m_O_Size[o].x;
 
 
-            for(unsigned int i = 1; i < height - 1; ++ i){
+            for(unsigned int i = SIFT_IMG_BORDER; i < height - SIFT_IMG_BORDER; ++ i){
                 int preRow = (i - 1) * width;
                 int curRow = i * width;
                 int nxtRow = (i + 1) * width;
-                for(unsigned int j = 1; j < width - 1; ++ j){
+                for(unsigned int j = SIFT_IMG_BORDER; j < width - SIFT_IMG_BORDER; ++ j){
 
                     float B11 = downImg[preRow + j - 1];
                     float B12 = downImg[preRow + j];
@@ -204,203 +204,121 @@ void SIFT::FindExtremePoint(){
                     float C31 = upImg[nxtRow + j - 1];
                     float C32 = upImg[nxtRow + j];
                     float C33 = upImg[nxtRow + j + 1];
+
+                    int extremePointType = 0;
                     // find extreme point
                     if( A22 > B11 && A22 > B12 && A22 > B13 && A22 > B21 && A22 > B22 && A22 > B23 && A22 > B31 && A22 > B32 && A22 > B33 && 
                         A22 > A11 && A22 > A12 && A22 > A13 && A22 > A21 &&              A22 > A23 && A22 > A31 && A22 > A32 && A22 > A33 && 
                         A22 > C11 && A22 > C12 && A22 > C13 && A22 > C21 && A22 > C22 && A22 > C23 && A22 > C31 && A22 > C32 && A22 > C33)
                     {
-                        float Dxx = A21 + A23 - 2.f * A22;
-                        float Dyy = A12 + A32 - 2.f * A22;
-                        float Dxy = (A33 + A11 - (A13 + A31)) * 0.25f;
-
-                        float detH = Dxx * Dyy - Dxy * Dxy;
-                        if(fabsf(detH) < FLT_EPSILON){
-                            continue;
-                        }
-
-                        float TrH = Dxx + Dyy;
-                        float r_1_2__r_2 = (TrH * TrH) / detH;
-                        if(fabsf(r_1_2__r_2) > 12.1f){
-                            continue;
-                        }
-
-                        //     | Dxx        Dxy        DSigmax     |
-                        // M = | Dyx        Dyy        DSigmay     |
-                        //     | DSigmax    DSigmay    DsigmaSigma |
-                        float DSigmaSigma = C22 + B22 - 2.f * A22;
-                        float DSigmaX     = (B21 + C23 - (B23 + C21)) * 0.25f;
-                        float DSigmaY     = (B12 + C32 - (B32 + C12)) * 0.25f;
-                        float detM = Dxx * Dyy * DSigmaSigma + Dxy * DSigmaY * DSigmaX + DSigmaX * Dxy * DSigmaY - (Dxx * DSigmaY * DSigmaY + Dxy * Dxy * DSigmaSigma + DSigmaX * Dyy * DSigmaX);
-                        if(fabsf(detM) < FLT_EPSILON){
-                            continue;
-                        }
-
-                        detM = 1.f / detM;
-                        float Dy = (A32 - A12) * 0.5f;
-                        float Dx = (A23 - A21) * 0.5f;
-                        float DSigma = (C22 - B22) * 0.5f;
-
-                        float MInv_11 = Dyy * DSigmaSigma - DSigmaY * DSigmaY;
-                        float MInv_12 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                        float MInv_13 = Dxy * DSigmaY - Dyy * DSigmaX;
-
-                        float xOffset = (MInv_11 * (-Dx) + MInv_12 * (-Dy) + MInv_13 * (-DSigma)) * detM;
-                        float xyOffsetTh = 4.f / (o + 1);
-                        if(fabsf(xOffset) > xyOffsetTh){
-                            continue;
-                        }
-
-
-                        float MInv_21 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                        float MInv_22 = Dxx * DSigmaSigma - DSigmaX * DSigmaX;
-                        float MInv_23 = Dxy * DSigmaX - Dxx * DSigmaY;
-                        float yOffset = (MInv_21 * (-Dx) + MInv_22 * (-Dy) + MInv_23 * (-DSigma)) * detM;
-                        if(fabsf(yOffset) > xyOffsetTh){
-                            continue;
-                        }
-
-                        float MInv_31 = Dxy * DSigmaY - Dyy * DSigmaX;
-                        float MInv_32 = Dxy * DSigmaX - Dxx * DSigmaY;
-                        float MInv_33 = Dxx * Dyy - Dxy * Dxy;
-                        float sigmaOffset = (MInv_31 * (-Dx) + MInv_32 * (-Dy) + MInv_33 * (-DSigma)) * detM;
-                        if(fabsf(sigmaOffset) > 1.f){
-                            continue;
-                        }
-                         
-                        float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset) * 0.00390625f;
-                        if(response < 1.7f)
-                        {
-                            continue;
-                        }
-
-                        float subCoordX = (xOffset + j) * coordinateScale + coordinateOffset;
-                        float subCoordY = (yOffset + i) * coordinateScale + coordinateOffset;
-                        float subCoordZ = sigmaOffset + pyramidLevel;
-
-                        if(subCoordX < 0.f || subCoordX >= m_width ||
-                           subCoordY < 0.f || subCoordY >= m_height ||
-                           subCoordZ < 0.f || subCoordZ >= SubZThreshold){
-                            continue;
-                        }
-
-                        Feature feature;
-                        feature.m_octave = o;
-                        feature.m_level = s;
-                        feature.m_o_s_coordiante.x = j;
-                        feature.m_o_s_coordiante.y = i;
-
-                        feature.m_response = response;
-                        feature.m_extremePointType = 1;
-                        feature.m_subCoordiante.x = subCoordX;
-                        feature.m_subCoordiante.y = subCoordY;
-                        feature.m_subCoordiante.z = subCoordZ;
-
-                        feature.m_coordiante.x = j * coordinateScale + coordinateOffset;
-                        feature.m_coordiante.y = i * coordinateScale + coordinateOffset;
-                        feature.m_coordiante.z = powf(sqrtf(2.f), subCoordZ);
-                        feature.m_dir = 0.f;
-                        
-                        oFeatures.push_back(feature);
-
+                        extremePointType = 1;
                     }
                     else if (A22 < B11 && A22 < B12 && A22 < B13 && A22 < B21 && A22 < B22 && A22 < B23 && A22 < B31 && A22 < B32 && A22 < B33 && 
                              A22 < A11 && A22 < A12 && A22 < A13 && A22 < A21 &&              A22 < A23 && A22 < A31 && A22 < A32 && A22 < A33 && 
                              A22 < C11 && A22 < C12 && A22 < C13 && A22 < C21 && A22 < C22 && A22 < C23 && A22 < C31 && A22 < C32 && A22 < C33)
                     {
 
-                        float Dxx = A21 + A23 - 2.f * A22;
-                        float Dyy = A12 + A32 - 2.f * A22;
-                        float Dxy = (A33 + A11 - (A13 + A31)) * 0.25f;
-
-                        float detH = Dxx * Dyy - Dxy * Dxy;
-                        if(fabsf(detH) < FLT_EPSILON){
-                            continue;
-                        }
-
-                        float TrH = Dxx + Dyy;
-                        float r_1_2__r_2 = (TrH * TrH) / detH;
-                        if(fabsf(r_1_2__r_2) > 12.1f){
-                            continue;
-                        }
-
-                        //     | Dxx        Dxy        DSigmax     |
-                        // M = | Dyx        Dyy        DSigmay     |
-                        //     | DSigmax    DSigmay    DsigmaSigma |
-                        float DSigmaSigma = C22 + B22 - 2.f * A22;
-                        float DSigmaX     = (B21 + C23 - (B23 + C21)) * 0.25f;
-                        float DSigmaY     = (B12 + C32 - (B32 + C12)) * 0.25f;
-                        float detM = Dxx * Dyy * DSigmaSigma + Dxy * DSigmaY * DSigmaX + DSigmaX * Dxy * DSigmaY - (Dxx * DSigmaY * DSigmaY + Dxy * Dxy * DSigmaSigma + DSigmaX * Dyy * DSigmaX);
-                        if(fabsf(detM) < FLT_EPSILON){
-                            continue;
-                        }
-
-                        detM = 1.f / detM;
-                        float Dy = (A32 - A12) * 0.5f;
-                        float Dx = (A23 - A21) * 0.5f;
-                        float DSigma = (C22 - B22) * 0.5f;
-
-                        float MInv_11 = Dyy * DSigmaSigma - DSigmaY * DSigmaY;
-                        float MInv_12 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                        float MInv_13 = Dxy * DSigmaY - Dyy * DSigmaX;
-
-                        float xOffset = (MInv_11 * (-Dx) + MInv_12 * (-Dy) + MInv_13 * (-DSigma)) * detM;
-                        float xyOffsetTh = 4.f / (o + 1);
-                        if(fabsf(xOffset) > xyOffsetTh){
-                            continue;
-                        }
-
-
-                        float MInv_21 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                        float MInv_22 = Dxx * DSigmaSigma - DSigmaX * DSigmaX;
-                        float MInv_23 = Dxy * DSigmaX - Dxx * DSigmaY;
-                        float yOffset = (MInv_21 * (-Dx) + MInv_22 * (-Dy) + MInv_23 * (-DSigma)) * detM;
-                        if(fabsf(yOffset) > xyOffsetTh){
-                            continue;
-                        }
-
-                        float MInv_31 = Dxy * DSigmaY - Dyy * DSigmaX;
-                        float MInv_32 = Dxy * DSigmaX - Dxx * DSigmaY;
-                        float MInv_33 = Dxx * Dyy - Dxy * Dxy;
-                        float sigmaOffset = (MInv_31 * (-Dx) + MInv_32 * (-Dy) + MInv_33 * (-DSigma)) * detM;
-                        if(fabsf(sigmaOffset) > 1.f){
-                            continue;
-                        }
-                         
-                        float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset) * 0.00390625f;
-                        if(response < 1.7f)
-                        {
-                            continue;
-                        }
-
-                        float subCoordX = (xOffset + j) * coordinateScale + coordinateOffset;
-                        float subCoordY = (yOffset + i) * coordinateScale + coordinateOffset;
-                        float subCoordZ = sigmaOffset + pyramidLevel;
-
-                        if(subCoordX < 0.f || subCoordX >= m_width ||
-                           subCoordY < 0.f || subCoordY >= m_height ||
-                           subCoordZ < 0.f || subCoordZ >= SubZThreshold){
-                            continue;
-                        }
-
-                        Feature feature;
-                        feature.m_octave = o;
-                        feature.m_level = s;
-                        feature.m_o_s_coordiante.x = j;
-                        feature.m_o_s_coordiante.y = i;
-
-                        feature.m_response = response;
-                        feature.m_extremePointType = 2;
-                        feature.m_subCoordiante.x = subCoordX;
-                        feature.m_subCoordiante.y = subCoordY;
-                        feature.m_subCoordiante.z = subCoordZ;
-
-                        feature.m_coordiante.x = j * coordinateScale + coordinateOffset;
-                        feature.m_coordiante.y = i * coordinateScale + coordinateOffset;
-                        feature.m_coordiante.z = powf(sqrtf(2.f), subCoordZ);
-                        feature.m_dir = 0.f;
-                        
-                        oFeatures.push_back(feature);
+                        extremePointType = 2;
+                    }else
+                    {
+                        continue;
                     }
+
+                    float Dxx = A21 + A23 - 2.f * A22;
+                    float Dyy = A12 + A32 - 2.f * A22;
+                    float Dxy = (A33 + A11 - (A13 + A31)) * 0.25f;
+
+                    float detH = Dxx * Dyy - Dxy * Dxy;
+                    if(fabsf(detH) < FLT_EPSILON){
+                        continue;
+                    }
+
+                    float TrH = Dxx + Dyy;
+                    float r_1_2__r_2 = (TrH * TrH) / detH;
+                    if(fabsf(r_1_2__r_2) > SIFT_DX_THR){
+                        continue;
+                    }
+
+                    //     | Dxx        Dxy        DSigmax     |
+                    // M = | Dyx        Dyy        DSigmay     |
+                    //     | DSigmax    DSigmay    DsigmaSigma |
+                    float DSigmaSigma = C22 + B22 - 2.f * A22;
+                    float DSigmaX     = (B21 + C23 - (B23 + C21)) * 0.25f;
+                    float DSigmaY     = (B12 + C32 - (B32 + C12)) * 0.25f;
+                    float detM = Dxx * Dyy * DSigmaSigma + Dxy * DSigmaY * DSigmaX + DSigmaX * Dxy * DSigmaY - (Dxx * DSigmaY * DSigmaY + Dxy * Dxy * DSigmaSigma + DSigmaX * Dyy * DSigmaX);
+                    if(fabsf(detM) < FLT_EPSILON){
+                        continue;
+                    }
+
+                    detM = 1.f / detM;
+                    float Dy = (A32 - A12) * 0.5f;
+                    float Dx = (A23 - A21) * 0.5f;
+                    float DSigma = (C22 - B22) * 0.5f;
+
+                    float MInv_11 = Dyy * DSigmaSigma - DSigmaY * DSigmaY;
+                    float MInv_12 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
+                    float MInv_13 = Dxy * DSigmaY - Dyy * DSigmaX;
+
+                    float xOffset = (MInv_11 * (-Dx) + MInv_12 * (-Dy) + MInv_13 * (-DSigma)) * detM;
+                    float xyOffsetTh = 4.f / (o + 1);
+                    if(fabsf(xOffset) > xyOffsetTh){
+                        continue;
+                    }
+
+
+                    float MInv_21 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
+                    float MInv_22 = Dxx * DSigmaSigma - DSigmaX * DSigmaX;
+                    float MInv_23 = Dxy * DSigmaX - Dxx * DSigmaY;
+                    float yOffset = (MInv_21 * (-Dx) + MInv_22 * (-Dy) + MInv_23 * (-DSigma)) * detM;
+                    if(fabsf(yOffset) > xyOffsetTh){
+                        continue;
+                    }
+
+                    float MInv_31 = Dxy * DSigmaY - Dyy * DSigmaX;
+                    float MInv_32 = Dxy * DSigmaX - Dxx * DSigmaY;
+                    float MInv_33 = Dxx * Dyy - Dxy * Dxy;
+                    float sigmaOffset = (MInv_31 * (-Dx) + MInv_32 * (-Dy) + MInv_33 * (-DSigma)) * detM;
+                    if(fabsf(sigmaOffset) > 1.f){
+                        continue;
+                    }
+
+                    float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset) * 0.00390625f;
+                    if(response < SIFT_RESPONSE_TH)
+                    {
+                        continue;
+                    }
+
+                    float subCoordX = (xOffset + j) * coordinateScale + coordinateOffset;
+                    float subCoordY = (yOffset + i) * coordinateScale + coordinateOffset;
+                    float subLevel = sigmaOffset + pyramidLevel;
+
+                    if(subCoordX < SIFT_IMG_BORDER || subCoordX >= m_width  - SIFT_IMG_BORDER ||
+                       subCoordY < SIFT_IMG_BORDER || subCoordY >= m_height - SIFT_IMG_BORDER ||
+                       subLevel < 0.f || subLevel >= SubZThreshold){
+                        continue;
+                    }
+
+                    Feature feature;
+                    feature.m_octave = o;
+                    feature.m_level = s;
+                    feature.m_subLevel = s + sigmaOffset;
+                    feature.m_o_s_coordiante.x = j;
+                    feature.m_o_s_coordiante.y = i;
+                    feature.m_pyramidLevel = subLevel;
+                    feature.m_pyramidScale = powf(2.f, subLevel / m_level);
+
+                    feature.m_coordiante.x = j * coordinateScale + coordinateOffset;
+                    feature.m_coordiante.y = i * coordinateScale + coordinateOffset;
+                    
+                    feature.m_response = response;
+                    feature.m_extremePointType = extremePointType;
+                    feature.m_subCoordiante.x = subCoordX;
+                    feature.m_subCoordiante.y = subCoordY;
+
+                    
+                    feature.m_dir = 0.f;
+                        
+                    oFeatures.push_back(feature);
                 }
             }
         }
