@@ -24,6 +24,7 @@ public:
 
     static void ImageConvolution(float* src, int width, int height, int channels, float* dst, float* filter, int ksize);
     static void ImageConvolution1(float* src, int width, int height, int channels, float* dst, float* filter, int ksize);
+    static void ImageConvolution2(float* src, int width, int height, float* dst, float* filter, int ksize);
 
     static void TwoImageDiff(float* img0, float* img1, int width, int height, int channels, float* out);
 
@@ -42,6 +43,8 @@ public:
 
     template<typename T>
     static void SaveImage(std::string path, int width, int height, int channels, T* img);
+
+    static void SaveBuffer(std::string path, int width, int height, int channels, float* img);
 
 private:
     static void ConvUInt8(unsigned char* in, unsigned char* out, int width, int channels, float* filter, int ksize);
@@ -84,6 +87,23 @@ inline void Utily::SaveImage(std::string path, int width, int height, int channe
         stbi_write_jpg(path.c_str(), width, height, STBI_rgb, saveBuffer, 100);
     }
     FREE_Memory(saveBuffer);
+}
+
+inline void Utily::SaveBuffer(std::string path, int width, int height, int channels, float* img){
+    
+    FILE* fp = NULL;
+    fp = fopen(path.c_str(), "w+");
+    if(fp){
+        for(int i = 0; i < height; ++ i){
+            for(int j = 0; j < width; ++ j){
+                for(int c = 0; c < channels; ++ c){
+                    fprintf(fp, "%.8f,", img[(i * width + j) * channels + c]);
+                }                
+            }
+            fprintf(fp, "\n");
+        }
+        fclose(fp);
+    }
 }
 
 #endif

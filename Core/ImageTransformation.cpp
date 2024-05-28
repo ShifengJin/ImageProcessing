@@ -169,7 +169,7 @@ void Utily::ImageConvolution(unsigned char* src, int width, int height, int chan
     for (int i = 0; i < height; ++i) {
         int yoffset = i * width * channels;
         if(i < offset || i >= (height - offset)){
-            memcpy(dst + yoffset, src + yoffset, width * height * channels * sizeof(unsigned char));
+            memcpy(dst + yoffset, src + yoffset, width * channels * sizeof(unsigned char));
             continue;
         }
         for (int j = 0; j < width; ++j) {
@@ -206,7 +206,7 @@ void Utily::ImageConvolution(float* src, int width, int height, int channels, fl
     for (int i = 0; i < height; ++i) {
         int yoffset = i * width * channels;
         if(i < offset || i >= (height - offset)){
-            memcpy(dst + yoffset, src + yoffset, width * height * channels * sizeof(float));
+            memcpy(dst + yoffset, src + yoffset, width * channels * sizeof(float));
             continue;
         }
         for (int j = 0; j < width; ++j) {
@@ -238,6 +238,37 @@ void Utily::ImageConvolution1(float* src, int width, int height, int channels, f
         for (int j = offset; j < width - offset; ++j) {
             int xoffset = yoffset + j * channels;
             ConvFloat((src + xoffset), (dst + xoffset), width, channels, filter, ksize);
+        }
+    }
+}
+
+void Utily::ImageConvolution2(float* src, int width, int height, float* dst, float* filter, int ksize){
+
+    int kOffset = ksize / 2;
+    for(int i = 0; i < height; ++ i){
+        for(int j = 0; j < width; ++ j){
+            dst[i * width + j] = 0.f;
+            for(int m = -kOffset; m <= kOffset; ++ m){
+                for(int n = -kOffset; n <= kOffset; ++ n){
+                    float f = filter[(m + kOffset) * ksize + n + kOffset];
+                    int imgY = i + m;
+                    int imgX = j + n;
+                    if(imgY < 0){
+                        imgY = -imgY;
+                    }
+                    if(imgX < 0){
+                        imgX = -imgX;
+                    }
+                    if(imgY >= height){
+                        imgY = 2 * height - imgY - 1;
+                    }
+                    if(imgX >= width){
+                        imgX = 2 * width - imgX - 1;
+                    }
+                    float v = src[imgY * width + imgX];
+                    dst[i * width + j] += v * f;
+                }
+            }
         }
     }
 }

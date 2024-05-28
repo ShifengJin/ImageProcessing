@@ -10,11 +10,16 @@
 class SIFT
 {
 
-#define SIFT_IMG_BORDER    5
-#define SIFT_ORI_HIST_BINS 36
-#define SIFT_THR_R         10.f
-#define SIFT_DX_THR        12.1f   // (SIFT_THR_R + 1) * (SIFT_THR_R + 1) / SIFT_THR_R
-#define SIFT_RESPONSE_TH   1.7f    
+#define SIFT_OCTAVE              3
+#define SIFT_LEVELS              3
+#define SIFT_IMG_BORDER          5
+#define SIFT_ORI_HIST_BINS       36
+#define SIFT_ALPHA               10.f
+#define SIFT_EDGERESPONSE        12.1f   // (SIFT_ALPHA + 1) * (SIFT_ALPHA + 1) / SIFT_ALPHA
+#define SIFT_RESPONSE_TH         0.f
+#define SIFT_INIT_SIGMA          0.f //0.5f
+#define SIFT_GAUSS_SIGMA         1.6f
+#define SIFT_GAUSS_KERNEL_RATION 2
 
 public:
     class Feature
@@ -32,6 +37,7 @@ public:
             m_subCoordiante    = feat.m_subCoordiante;
             m_pyramidLevel     = feat.m_pyramidLevel;
             m_pyramidScale     = feat.m_pyramidScale;
+            m_octScale         = feat.m_octScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
         }
@@ -48,6 +54,7 @@ public:
             m_subCoordiante    = feat.m_subCoordiante;
             m_pyramidLevel     = feat.m_pyramidLevel;
             m_pyramidScale     = feat.m_pyramidScale;
+            m_octScale         = feat.m_octScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
         }
@@ -67,6 +74,7 @@ public:
             m_subCoordiante.y  = 0.f;
             m_pyramidLevel     = 0.f;
             m_pyramidScale     = 0.f;
+            m_octScale         = 0.f;
             m_response         = 0.f;
             m_extremePointType = 0;
         }
@@ -83,6 +91,7 @@ public:
             m_subCoordiante    = feat.m_subCoordiante;
             m_pyramidLevel     = feat.m_pyramidLevel;
             m_pyramidScale     = feat.m_pyramidScale;
+            m_octScale         = feat.m_octScale;
             m_response         = feat.m_response;
             m_extremePointType = feat.m_extremePointType;
             return *this;
@@ -98,15 +107,25 @@ public:
         Vector2f m_subCoordiante;    // x,y   (x+xi,y+yi) * scale + offset     for srcImgSize
         float    m_pyramidLevel;
         float    m_pyramidScale;
+        float    m_octScale;
         float    m_response;
         int      m_extremePointType; // 1 big  2 little  0 default
+    };
+
+    class GaussFilter{
+    public:
+        GaussFilter(int iKernelWidth, float iSigma);
+        ~GaussFilter();
+        int kernel_width;
+        float sigma;
+        float* kernel;
     };
 
 public:
     typedef std::shared_ptr<SIFT> ptr;
 
     // 为了满足尺度变化的连续性
-    SIFT(unsigned int width, unsigned int height, unsigned int maxNum = 800, unsigned int Octave = 3, unsigned int Level = 3, float delta = 1.6f, float gaussRadius = 2);
+    SIFT(unsigned int width, unsigned int height, unsigned int maxNum = 800, unsigned int Octave = SIFT_OCTAVE, unsigned int Level = SIFT_LEVELS, float sigma = SIFT_GAUSS_SIGMA);
 
     void Run(float *gray);
 
@@ -121,17 +140,18 @@ private:
 
 private:
     unsigned int m_width, m_height, m_octave, m_level, m_maxNum;
-    float m_delta, m_gaussRadius;
-    float *m_gaussKernel;
+    float m_sigma;
 
+    std::vector<GaussFilter*> m_Level_GaussFilters;
+    
     float *m_srcImg;
 
     std::vector<ImgSize> m_O_Size;
-    std::vector<std::vector<float *>> m_O_S_GaussImgs; // img pyramid   Octave * (Scale + 3)
+    std::vector<std::vector<float *>> m_O_L_GaussImgs; // img pyramid   Octave * (Scale + 3)
 
-    std::vector<std::vector<float *>> m_O_S_DOGImgs;   // DOG pyramid Octave * (Scale + 2)
+    std::vector<std::vector<float *>> m_O_L_DOGImgs;   // DOG pyramid Octave * (Scale + 2)
 
-    std::vector<std::vector<Feature>> m_O_Coordiantes;
+    // std::vector<std::vector<Feature>> m_O_Coordiantes;
 };
 
 #endif
