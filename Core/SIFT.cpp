@@ -14,18 +14,24 @@ SIFT::SIFT(unsigned int width, unsigned int height, unsigned int maxNum, unsigne
     }
     std::cout << "Octave: " << m_octave << std::endl;
     // Gauss sigma
-    float sigma0 = sqrtf(m_sigma * sigma - 4.f * SIFT_INIT_SIGMA * SIFT_INIT_SIGMA);
-    int kernelWidth0 = 2 * roundf(SIFT_GAUSS_KERNEL_RATION * sigma0) + 1;
-    GaussFilter* gaussFilter0 = new GaussFilter(kernelWidth0, sigma0);
-    m_Level_GaussFilters.push_back(gaussFilter0);
+    float sigma0 = sqrtf(m_sigma * sigma - SIFT_INIT_SIGMA * SIFT_INIT_SIGMA);
     float k = powf(2.f, 1.f / m_level);
-    for(unsigned int i = 1; i < m_level + 3; ++ i){
-        float prev_sigma = powf(k, i - 1) * m_sigma;
-        float curr_sigma = k * prev_sigma;
-        int kernelWidthi = 2 * roundf(SIFT_GAUSS_KERNEL_RATION * curr_sigma) + 1;
-        GaussFilter* gaussFilteri = new GaussFilter(kernelWidthi, curr_sigma);
-        m_Level_GaussFilters.push_back(gaussFilteri);
+
+    std::cout << "sigma0: " << sigma0 << std::endl;
+    
+    for(unsigned int l = 0; l < m_level + 3; ++l){
+        float sig = powf(k, l) * sigma0;
+        m_L_Sigma.push_back(sig);
     }
+    
+    for(unsigned int l = 0; l < m_level + 3; ++ l){
+        int ksize = 6 * m_L_Sigma[l] + 1;
+        if(ksize % 2 == 0){
+            ksize += 1;
+        }
+        GaussFilter* gaussFilteri = new GaussFilter(ksize, m_L_Sigma[l]);
+        m_Level_GaussFilters.push_back(gaussFilteri);
+    }    
 
     for(unsigned int i = 0; i < m_Level_GaussFilters.size(); ++i){
         std::cout << "GaussFilter: " << m_Level_GaussFilters[i]->kernel_width << ", " << m_Level_GaussFilters[i]->sigma << std::endl;
@@ -36,10 +42,9 @@ SIFT::SIFT(unsigned int width, unsigned int height, unsigned int maxNum, unsigne
     ImgSize imgSize;
     imgSize.x = m_width;
     imgSize.y = m_height;
-
+    
     std::cout << "m_O_Size:" << std::endl;
     m_O_Size.push_back(imgSize);
-    std::cout << "m_octave: " << m_octave << std::endl;
     for(unsigned int o = 1; o < m_octave; ++o){
         ImgSize imgSize;
         imgSize.x = (int)(m_O_Size[o - 1].x * 0.5f + 0.5f);
@@ -77,7 +82,7 @@ SIFT::SIFT(unsigned int width, unsigned int height, unsigned int maxNum, unsigne
 }
 
 bool featureResponseCmp(SIFT::Feature& in0, SIFT::Feature& in1){
-    return in0.m_response < in1.m_response;
+    return in0.m_response > in1.m_response;
 }
 
 void SIFT::Run(float* gray){
@@ -100,12 +105,17 @@ void SIFT::Run(float* gray){
     // check extreme point
     FindExtremePoint();
     
+    
+
+
     // choose Feature
     std::sort(m_Coordiantes.begin(), m_Coordiantes.end(), featureResponseCmp);
     if(m_Coordiantes.size() > m_maxNum){
         m_Coordiantes.resize(m_maxNum);
     }
-
+    for(unsigned int i = 0; i < 10; ++ i){
+        std::cout << m_Coordiantes[i].m_response << std::endl;
+    }
 
     // ori and desc
 
@@ -117,14 +127,13 @@ void SIFT::GaussPyramidImgs(float* gray){
 
         for(unsigned int s = 0; s < m_level + 3; ++ s){
             std::cout << "GaussImage: " << o << "   " << s << std::endl;
-            if(o == 0 && s == 0){
-                
+            if(o == 0 && s == 0){                
                 Utily::ImageConvolution2(gray, m_O_Size[o].x, m_O_Size[o].y, m_O_L_GaussImgs[o][s], m_Level_GaussFilters[s]->kernel, m_Level_GaussFilters[s]->kernel_width);
             }else if(o > 0 && s == 0){
                 ImageInterpolation_Nearest(m_O_L_GaussImgs[o - 1][m_level], m_O_Size[o - 1].x, m_O_Size[o - 1].y, 1, m_O_L_GaussImgs[o][s], m_O_Size[o].x, m_O_Size[o].y);
             }else{
 
-                Utily::ImageConvolution2(m_O_L_GaussImgs[o][s - 1], m_O_Size[o].x, m_O_Size[o].y, m_O_L_GaussImgs[o][s], m_Level_GaussFilters[s]->kernel, m_Level_GaussFilters[s]->kernel_width);
+                Utily::ImageConvolution2(m_O_L_GaussImgs[o][0], m_O_Size[o].x, m_O_Size[o].y, m_O_L_GaussImgs[o][s], m_Level_GaussFilters[s]->kernel, m_Level_GaussFilters[s]->kernel_width);
             }
         }
     }
@@ -349,10 +358,11 @@ void SIFT::FindExtremePoint(){
                         continue;
                     }
 
-                    float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset) * 0.00390625f;
+                    float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset);
                     if(response < SIFT_RESPONSE_TH)
                     {
 #if EXTREMEPOINTSTATISTICS
+                        std::cout << response << std::endl;
                         responseOutNum++;
 #endif
                         continue;

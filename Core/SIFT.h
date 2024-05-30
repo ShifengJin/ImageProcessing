@@ -16,10 +16,9 @@ class SIFT
 #define SIFT_ORI_HIST_BINS       36
 #define SIFT_ALPHA               10.f
 #define SIFT_EDGERESPONSE        12.1f   // (SIFT_ALPHA + 1) * (SIFT_ALPHA + 1) / SIFT_ALPHA
-#define SIFT_RESPONSE_TH         0.f
-#define SIFT_INIT_SIGMA          0.f //0.5f
+#define SIFT_RESPONSE_TH         0.1f    // keypoint response threshold
+#define SIFT_INIT_SIGMA          0.5f    // 0.5f
 #define SIFT_GAUSS_SIGMA         1.6f
-#define SIFT_GAUSS_KERNEL_RATION 2
 
 public:
     class Feature
@@ -142,6 +141,7 @@ private:
     unsigned int m_width, m_height, m_octave, m_level, m_maxNum;
     float m_sigma;
 
+    std::vector<float> m_L_Sigma;
     std::vector<GaussFilter*> m_Level_GaussFilters;
     
     float *m_srcImg;
