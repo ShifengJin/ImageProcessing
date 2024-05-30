@@ -25,19 +25,18 @@ SIFT::SIFT(unsigned int width, unsigned int height, unsigned int maxNum, unsigne
     }
     
     for(unsigned int l = 0; l < m_level + 3; ++ l){
-        int ksize = 6 * m_L_Sigma[l] + 1;
+        int ksize = SIFT_GAUSS_KERNEL_RATIO * m_L_Sigma[l] + 1;
         if(ksize % 2 == 0){
             ksize += 1;
         }
         GaussFilter* gaussFilteri = new GaussFilter(ksize, m_L_Sigma[l]);
         m_Level_GaussFilters.push_back(gaussFilteri);
-    }    
+    }
 
     for(unsigned int i = 0; i < m_Level_GaussFilters.size(); ++i){
         std::cout << "GaussFilter: " << m_Level_GaussFilters[i]->kernel_width << ", " << m_Level_GaussFilters[i]->sigma << std::endl;
     }
-
-
+    
     // compute octave img size
     ImgSize imgSize;
     imgSize.x = m_width;
@@ -113,10 +112,7 @@ void SIFT::Run(float* gray){
     if(m_Coordiantes.size() > m_maxNum){
         m_Coordiantes.resize(m_maxNum);
     }
-    for(unsigned int i = 0; i < 10; ++ i){
-        std::cout << m_Coordiantes[i].m_response << std::endl;
-    }
-
+    
     // ori and desc
 
 }
@@ -173,27 +169,33 @@ void SIFT::DOGPyramidImgs(){
 #endif
 }
 
+
+
 void SIFT::FindExtremePoint(){
+
+#if SHOWEXTREMEPOINTLOG
+    findNum  = 0;
+    NGPixelThresholdNum = 0;
+    extremeNum = 0;
+    bigExtremeNum = 0;
+    littleExtremeNum = 0;
+
+    outBorderNum = 0;
+    DetHInvWroundNum = 0;
+    xOffsetOutNum = 0;
+    yOffsetOutNum = 0;
+    sOffsetOutNum = 0;
+    iterOutNum = 0;
+    responseOutNum = 0;
+    detHOutNum = 0;
+    edgeOutNum = 0;
+#endif
+
 
     float scaleOffset[10] = { 0.f, 0.5f, 1.5f, 3.5f, 7.5f, 15.5f, 31.5f, 63.5f, 127.5f, 255.5f };
     float octaveScale[10] = { 1.f, 2.f, 4.f, 8.f, 16.f, 32.f, 64.f, 128.f, 256.f, 512.f };
     float SubZThreshold = m_octave * m_level + 1.f;
 
-#define EXTREMEPOINTSTATISTICS 0
-
-#if EXTREMEPOINTSTATISTICS
-    int findNum = 0;
-    int extremeNum = 0;
-
-    int detHOutNum = 0;
-    int EDGOutNum = 0;
-    int detMOutNum = 0;
-    int xOffsetOutNum = 0;
-    int yOffsetOutNum = 0;
-    int sigmaOffsetOutNum = 0;
-    int responseOutNum = 0;
-    int edgeOutNum = 0;
-#endif
     m_Coordiantes.clear();
 
     for(unsigned int o = 0; o < m_octave; ++ o){
@@ -218,6 +220,18 @@ void SIFT::FindExtremePoint(){
                 int curRow = i * width;
                 int nxtRow = (i + 1) * width;
                 for(unsigned int j = SIFT_IMG_BORDER; j < width - SIFT_IMG_BORDER; ++ j){
+                    
+#if SHOWEXTREMEPOINTLOG
+                    findNum ++;
+#endif
+
+                    float A22 = curImg[curRow + j];
+                    if(fabs(A22) < SIFT_EXTREMA_TH_PIXEL){
+#if SHOWEXTREMEPOINTLOG
+                        NGPixelThresholdNum ++;
+#endif
+                        continue;
+                    }
 
                     float B11 = downImg[preRow + j - 1];
                     float B12 = downImg[preRow + j];
@@ -237,7 +251,6 @@ void SIFT::FindExtremePoint(){
                     float A13 = curImg[preRow + j + 1];
 
                     float A21 = curImg[curRow + j - 1];
-                    float A22 = curImg[curRow + j];
                     float A23 = curImg[curRow + j + 1];
 
                     float A31 = curImg[nxtRow + j - 1];
@@ -257,166 +270,284 @@ void SIFT::FindExtremePoint(){
                     float C32 = upImg[nxtRow + j];
                     float C33 = upImg[nxtRow + j + 1];
 
-#if EXTREMEPOINTSTATISTICS
-                    findNum ++;
-#endif
-
                     int extremePointType = 0;
                     // find extreme point
                     if( A22 > B11 && A22 > B12 && A22 > B13 && A22 > B21 && A22 > B22 && A22 > B23 && A22 > B31 && A22 > B32 && A22 > B33 && 
                         A22 > A11 && A22 > A12 && A22 > A13 && A22 > A21 &&              A22 > A23 && A22 > A31 && A22 > A32 && A22 > A33 && 
                         A22 > C11 && A22 > C12 && A22 > C13 && A22 > C21 && A22 > C22 && A22 > C23 && A22 > C31 && A22 > C32 && A22 > C33)
                     {
+#if SHOWEXTREMEPOINTLOG
+                        bigExtremeNum ++;
+#endif
                         extremePointType = 1;
                     }
                     else if (A22 < B11 && A22 < B12 && A22 < B13 && A22 < B21 && A22 < B22 && A22 < B23 && A22 < B31 && A22 < B32 && A22 < B33 && 
                              A22 < A11 && A22 < A12 && A22 < A13 && A22 < A21 &&              A22 < A23 && A22 < A31 && A22 < A32 && A22 < A33 && 
                              A22 < C11 && A22 < C12 && A22 < C13 && A22 < C21 && A22 < C22 && A22 < C23 && A22 < C31 && A22 < C32 && A22 < C33)
                     {
+#if SHOWEXTREMEPOINTLOG
+                        littleExtremeNum ++;
+#endif
                         extremePointType = 2;
                     }else
                     {
                         continue;
                     }
-#if EXTREMEPOINTSTATISTICS
+
+#if SHOWEXTREMEPOINTLOG
                     extremeNum ++;
 #endif
 
-                    float Dxx = A21 + A23 - 2.f * A22;
-                    float Dyy = A12 + A32 - 2.f * A22;
-                    float Dxy = (A33 + A11 - (A13 + A31)) * 0.25f;
-
-                    float detH = Dxx * Dyy - Dxy * Dxy;
-                    if(fabsf(detH) < FLT_EPSILON){
-#if EXTREMEPOINTSTATISTICS
-                        detHOutNum ++;
-#endif
-                        continue;
-                    }
-
-                    float TrH = Dxx + Dyy;
-                    float r_1_2__r_2 = (TrH * TrH) / detH;
-                    if(fabsf(r_1_2__r_2) > SIFT_EDGERESPONSE){
-#if EXTREMEPOINTSTATISTICS
-                        EDGOutNum ++;
-#endif
-                        continue;
-                    }
-
-                    //     | Dxx        Dxy        DSigmax     |
-                    // M = | Dyx        Dyy        DSigmay     |
-                    //     | DSigmax    DSigmay    DsigmaSigma |
-                    float DSigmaSigma = C22 + B22 - 2.f * A22;
-                    float DSigmaX     = (B21 + C23 - (B23 + C21)) * 0.25f;
-                    float DSigmaY     = (B12 + C32 - (B32 + C12)) * 0.25f;
-                    float detM = Dxx * Dyy * DSigmaSigma + Dxy * DSigmaY * DSigmaX + DSigmaX * Dxy * DSigmaY - (Dxx * DSigmaY * DSigmaY + Dxy * Dxy * DSigmaSigma + DSigmaX * Dyy * DSigmaX);
-                    if(fabsf(detM) < FLT_EPSILON){
-#if EXTREMEPOINTSTATISTICS
-                        detMOutNum ++;
-#endif
-                        continue;
-                    }
-
-                    detM = 1.f / detM;
-                    float Dy = (A32 - A12) * 0.5f;
-                    float Dx = (A23 - A21) * 0.5f;
-                    float DSigma = (C22 - B22) * 0.5f;
-
-                    float MInv_11 = Dyy * DSigmaSigma - DSigmaY * DSigmaY;
-                    float MInv_12 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                    float MInv_13 = Dxy * DSigmaY - Dyy * DSigmaX;
-
-                    float xOffset = (MInv_11 * (-Dx) + MInv_12 * (-Dy) + MInv_13 * (-DSigma)) * detM;
-                    float xyOffsetTh = 4.f / (o + 1);
-                    if(fabsf(xOffset) > xyOffsetTh){
-#if EXTREMEPOINTSTATISTICS
-                        xOffsetOutNum ++;
-#endif
-                        continue;
-                    }
-
-
-                    float MInv_21 = DSigmaX * DSigmaY - Dxy * DSigmaSigma;
-                    float MInv_22 = Dxx * DSigmaSigma - DSigmaX * DSigmaX;
-                    float MInv_23 = Dxy * DSigmaX - Dxx * DSigmaY;
-                    float yOffset = (MInv_21 * (-Dx) + MInv_22 * (-Dy) + MInv_23 * (-DSigma)) * detM;
-                    if(fabsf(yOffset) > xyOffsetTh){
-#if EXTREMEPOINTSTATISTICS
-                        yOffsetOutNum ++;
-#endif
-                        continue;
-                    }
-
-                    float MInv_31 = Dxy * DSigmaY - Dyy * DSigmaX;
-                    float MInv_32 = Dxy * DSigmaX - Dxx * DSigmaY;
-                    float MInv_33 = Dxx * Dyy - Dxy * Dxy;
-                    float sigmaOffset = (MInv_31 * (-Dx) + MInv_32 * (-Dy) + MInv_33 * (-DSigma)) * detM;
-                    if(fabsf(sigmaOffset) > 1.f){
-#if EXTREMEPOINTSTATISTICS
-                        sigmaOffsetOutNum ++;
-#endif
-                        continue;
-                    }
-
-                    float response = fabsf(A22 + Dx * xOffset + Dy * yOffset + DSigma * sigmaOffset);
-                    if(response < SIFT_RESPONSE_TH)
-                    {
-#if EXTREMEPOINTSTATISTICS
-                        std::cout << response << std::endl;
-                        responseOutNum++;
-#endif
-                        continue;
-                    }
-
-                    float subCoordX = (xOffset + j) * coordinateScale + coordinateOffset;
-                    float subCoordY = (yOffset + i) * coordinateScale + coordinateOffset;
-                    float subLevel = sigmaOffset + pyramidLevel;
-
-                    if(subCoordX < SIFT_IMG_BORDER || subCoordX >= m_width  - SIFT_IMG_BORDER ||
-                       subCoordY < SIFT_IMG_BORDER || subCoordY >= m_height - SIFT_IMG_BORDER ||
-                       subLevel < 0.f || subLevel >= SubZThreshold){
-#if EXTREMEPOINTSTATISTICS
-                        edgeOutNum ++;
-#endif
-                        continue;
-                    }
 
                     Feature feature;
-                    feature.m_octave = o;
-                    feature.m_level = s;
-                    feature.m_subLevel = s + sigmaOffset;
-                    feature.m_o_s_coordiante.x = j;
-                    feature.m_o_s_coordiante.y = i;
-                    feature.m_pyramidLevel = subLevel;
-                    feature.m_pyramidScale = powf(2.f, subLevel / m_level);
-                    feature.m_octScale = powf(2.f, feature.m_subLevel / m_level);
-
-                    feature.m_coordiante.x = j * coordinateScale + coordinateOffset;
-                    feature.m_coordiante.y = i * coordinateScale + coordinateOffset;
-
-                    feature.m_response = response;
-                    feature.m_extremePointType = extremePointType;
-                    feature.m_subCoordiante.x = subCoordX;
-                    feature.m_subCoordiante.y = subCoordY;
-
-                    
-                    feature.m_dir = 0.f;
-                        
-                    // oFeatures.push_back(feature);
-                    m_Coordiantes.push_back(feature);
+                    bool ret = AdjustLocalExtrema(width, height, j, i, o, s, extremePointType, coordinateScale, coordinateOffset, feature);
+                    if(ret){
+                        m_Coordiantes.push_back(feature);
+                    }
                 }
             }
         }
-        // m_O_Coordiantes.push_back(oFeatures);
     }
 
-#if EXTREMEPOINTSTATISTICS
-    std::cout << "findNum: " << findNum << "    extremeNum: " << extremeNum << "    detHOutNum: " << detHOutNum << 
-    "    EDGOutNum: " << EDGOutNum << "    detMOutNum: " << detMOutNum << 
-    "    xOffsetOutNum: " << xOffsetOutNum << "    yOffsetOutNum: " << yOffsetOutNum <<
-    "    sigmaOffsetOutNum: " << sigmaOffsetOutNum << "    responseOutNum: " << responseOutNum <<
-    "    edgeOutNum: " << edgeOutNum << std::endl;
+#if SHOWEXTREMEPOINTLOG
+    std::cout << "findNUm: " << findNum << std::endl;
+    std::cout << "NGPixelThresholdNum: " << NGPixelThresholdNum << std::endl;
+    std::cout << "extremeNum: " << extremeNum << std::endl;
+    std::cout << "bigExtremeNum: " << bigExtremeNum << std::endl;
+    std::cout << "littleExtremeNum: " << littleExtremeNum << std::endl;
+    
+    std::cout << "outBorderNum: " << outBorderNum  << std::endl;
+    std::cout << "DetHInvWroundNum: " << DetHInvWroundNum  << std::endl;
+    std::cout << "xOffsetOutNum: " << xOffsetOutNum  << std::endl;
+    std::cout << "yOffsetOutNum: " << yOffsetOutNum  << std::endl;
+    std::cout << "sOffsetOutNum: " << sOffsetOutNum  << std::endl;
+    std::cout << "iterOutNum: " << iterOutNum  << std::endl;
+    std::cout << "responseOutNum: " << responseOutNum  << std::endl;
+    std::cout << "detHOutNum: " << detHOutNum  << std::endl;
+    std::cout << "edgeOutNum: " << edgeOutNum  << std::endl;
 #endif
+
+
+}
+
+bool SIFT::AdjustLocalExtrema(int width, int height, int x, int y, int o, int l, int extremePointType, float scale, float offset, Feature& oFeature){
+
+    float B11 = 0.f, B12 = 0.f, B13 = 0.f, B21 = 0.f, B22 = 0.f, B23 = 0.f, B31 = 0.f, B32 = 0.f, B33 = 0.f;            
+    float A11 = 0.f, A12 = 0.f, A13 = 0.f, A21 = 0.f, A22 = 0.f, A23 = 0.f, A31 = 0.f, A32 = 0.f, A33 = 0.f;
+    float C11 = 0.f, C12 = 0.f, C13 = 0.f, C21 = 0.f, C22 = 0.f, C23 = 0.f, C31 = 0.f, C32 = 0.f, C33 = 0.f;
+
+    float Dy = 0.f, Dx = 0.f, DS = 0.f;
+
+    float *downImg = NULL, *curImg = NULL, *upImg = NULL;
+
+    float Dxx = 0.f, Dyy = 0.f, DSS = 0.f, Dxy = 0.f, DSX = 0.f, DSY = 0.f;
+
+    float xyOffsetTh = 4.f / (o + 1);
+    
+    float xOffset = 0.f, yOffset = 0.f, sOffset = 0.f;
+
+    int subX = x;
+    int subY = y;
+    int subS = l;
+
+    int iterCount = 0;
+    while (iterCount < SIFT_MAX_INTERP_STEPS){
+        if(subX < SIFT_IMG_BORDER || subX >= width - SIFT_IMG_BORDER ||
+           subY < SIFT_IMG_BORDER || subY >= height - SIFT_IMG_BORDER ||
+           subS < 1 || subS > m_level)
+        {
+#if SHOWEXTREMEPOINTLOG
+            outBorderNum ++;
+#endif
+            return false;
+        }
+
+        downImg = m_O_L_DOGImgs[o][subS - 1];
+        curImg  = m_O_L_DOGImgs[o][subS];
+        upImg   = m_O_L_DOGImgs[o][subS + 1];
+
+        int preRow = (subY - 1) * width;
+        int curRow = subY * width;
+        int nxtRow = (subY + 1) * width;
+
+        B11 = downImg[preRow + subX - 1];
+        B12 = downImg[preRow + subX];
+        B13 = downImg[preRow + subX + 1];
+        B21 = downImg[curRow + subX - 1];
+        B22 = downImg[curRow + subX];
+        B23 = downImg[curRow + subX + 1];
+        B31 = downImg[nxtRow + subX - 1];
+        B32 = downImg[nxtRow + subX];
+        B33 = downImg[nxtRow + subX + 1];
+    
+        A11 = curImg[preRow + subX - 1];
+        A12 = curImg[preRow + subX];
+        A13 = curImg[preRow + subX + 1];
+        A21 = curImg[curRow + subX - 1];
+        A22 = curImg[curRow + subX];
+        A23 = curImg[curRow + subX + 1];
+        A31 = curImg[nxtRow + subX - 1];
+        A32 = curImg[nxtRow + subX];
+        A33 = curImg[nxtRow + subX + 1];
+
+        C11 = upImg[preRow + subX - 1];
+        C12 = upImg[preRow + subX];
+        C13 = upImg[preRow + subX + 1];
+        C21 = upImg[curRow + subX - 1];
+        C22 = upImg[curRow + subX];
+        C23 = upImg[curRow + subX + 1];
+        C31 = upImg[nxtRow + subX - 1];
+        C32 = upImg[nxtRow + subX];
+        C33 = upImg[nxtRow + subX + 1];
+
+
+        Dy = (A32 - A12) * 0.5f;
+        Dx = (A23 - A21) * 0.5f;
+        DS = (C22 - B22) * 0.5f;
+        
+
+        //     | Dxx    Dxy    DSx |
+        // H = | Dyx    Dyy    DSy |
+        //     | DSx    DSy    DSS |
+        Dxx = A21 + A23 - 2.f * A22;
+        Dyy = A12 + A32 - 2.f * A22;
+        DSS = C22 + B22 - 2.f * A22;
+        Dxy = (A33 + A11 - (A13 + A31)) * 0.25f;
+        DSX = (B21 + C23 - (B23 + C21)) * 0.25f;
+        DSY = (B12 + C32 - (B32 + C12)) * 0.25f;
+
+        float detH = Dxx * Dyy * DSS + Dxy * DSY * DSX + DSX * Dxy * DSY - (Dxx * DSY * DSY + Dxy * Dxy * DSS + DSX * Dyy * DSX);
+        if(fabsf(detH) < FLT_EPSILON){
+
+#if SHOWEXTREMEPOINTLOG
+            DetHInvWroundNum ++;
+#endif
+
+            return false;
+        }
+
+        detH = 1.f / detH;
+    
+        float MInv_11 = Dyy * DSS - DSY * DSY;
+        float MInv_12 = DSX * DSY - Dxy * DSS;
+        float MInv_13 = Dxy * DSY - Dyy * DSX;
+
+        xOffset = (MInv_11 * -Dx + MInv_12 * -Dy + MInv_13 * -DS) * detH;
+        if(fabsf(xOffset) > xyOffsetTh){
+#if SHOWEXTREMEPOINTLOG
+            xOffsetOutNum ++;
+#endif
+            return false;
+        }
+
+
+        float MInv_21 = DSX * DSY - Dxy * DSS;
+        float MInv_22 = Dxx * DSS - DSX * DSX;
+        float MInv_23 = Dxy * DSX - Dxx * DSY;
+        yOffset = (MInv_21 * -Dx + MInv_22 * -Dy + MInv_23 * -DS) * detH;
+        if(fabsf(yOffset) > xyOffsetTh){
+#if SHOWEXTREMEPOINTLOG
+            yOffsetOutNum ++;
+#endif
+            return false;
+        }
+
+        float MInv_31 = Dxy * DSY - Dyy * DSX;
+        float MInv_32 = Dxy * DSX - Dxx * DSY;
+        float MInv_33 = Dxx * Dyy - Dxy * Dxy;
+        sOffset = (MInv_31 * (-Dx) + MInv_32 * (-Dy) + MInv_33 * (-DS)) * detH;
+        if(fabsf(sOffset) > 1.f){
+#if SHOWEXTREMEPOINTLOG
+            sOffsetOutNum ++;
+#endif
+            return false;
+        }
+        
+        if(fabs(xOffset) < 0.5f && fabs(yOffset) < 0.5f && fabs(sOffset) < 0.5f){
+            break;
+        }
+
+        subX += (int)roundf(xOffset);
+        subY += (int)roundf(yOffset);
+        subS += (int)roundf(sOffset);
+
+        iterCount++;
+    }
+
+    if(iterCount >= SIFT_MAX_INTERP_STEPS){
+#if SHOWEXTREMEPOINTLOG
+        iterOutNum ++;
+#endif
+        return false;
+    }
+
+    float AnsSubX = subX + xOffset;
+    float AnsSubY = subY + yOffset;
+    float AnsSubS = subS + sOffset;
+
+    if(AnsSubX < SIFT_IMG_BORDER || AnsSubX >= width - SIFT_IMG_BORDER ||
+       AnsSubY < SIFT_IMG_BORDER || AnsSubY >= height - SIFT_IMG_BORDER ||
+       AnsSubS < 1 || AnsSubS > m_level + 1)
+    {
+#if SHOWEXTREMEPOINTLOG
+        std::cout << AnsSubX << ", " << AnsSubY << ", " << AnsSubS << std::endl;
+        outBorderNum ++;
+#endif
+        return false;
+    }
+    
+    float response = fabsf(A22 + (Dx * xOffset + Dy * yOffset + DS * sOffset) * 0.5f);
+    if(response < SIFT_RESPONSE_TH)
+    {
+#if SHOWEXTREMEPOINTLOG
+        responseOutNum ++;
+#endif
+        return false;
+    }
+    
+    float detH = Dxx * Dyy - Dxy * Dxy;
+    if(detH <= FLT_EPSILON){
+#if SHOWEXTREMEPOINTLOG
+        detHOutNum ++;
+#endif
+        return false;
+    }
+
+    float TrH = Dxx + Dyy;
+    float r_1_2__r_2 = (TrH * TrH) / detH;
+    if(fabsf(r_1_2__r_2) > SIFT_EDGERESPONSE){
+#if SHOWEXTREMEPOINTLOG
+        edgeOutNum ++;
+#endif
+        return false;
+    }
+
+    float subCoordX = AnsSubX * scale + offset;
+    float subCoordY = AnsSubY * scale + offset;
+    float subLevel = o * m_level + AnsSubS;
+    
+    oFeature.m_octave = o;
+    oFeature.m_level = l;
+    oFeature.m_subLevel = AnsSubS;
+    oFeature.m_o_s_coordiante.x = x;
+    oFeature.m_o_s_coordiante.y = y;
+    oFeature.m_o_s_subCoordiante.x = AnsSubX;
+    oFeature.m_o_s_subCoordiante.y = subCoordY;
+
+    oFeature.m_pyramidLevel = subLevel;
+    oFeature.m_pyramidScale = m_sigma * powf(2.f, subLevel / m_level);
+
+    oFeature.m_octScale = m_sigma * powf(2.f, oFeature.m_subLevel / m_level);
+
+    oFeature.m_coordiante.x = x + scale + offset;
+    oFeature.m_coordiante.y = y + scale + offset;
+
+    oFeature.m_response = response;
+    oFeature.m_extremePointType = extremePointType;
+    oFeature.m_subCoordiante.x = subCoordX;
+    oFeature.m_subCoordiante.y = subCoordY;        
+    oFeature.m_dir = 0.f;
+    return true;
 }
 
 SIFT::~SIFT(){
